@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Matematiksel Sihir Oyunu</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #6e8efb, #a777e3);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 600px;
+            width: 100%;
+            background-color: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            padding: 30px;
+            text-align: center;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 2.5rem;
+        }
+        
+        .game-area {
+            margin: 30px 0;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border-radius: 10px;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.05);
+        }
+        
+        .step {
+            margin-bottom: 25px;
+            padding: 20px;
+            border-radius: 8px;
+            background-color: white;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+            text-align: left;
+        }
+        
+        .step-number {
+            display: inline-block;
+            width: 35px;
+            height: 35px;
+            background: linear-gradient(to right, #6e8efb, #a777e3);
+            color: white;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 35px;
+            margin-right: 15px;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+        
+        .step-content {
+            display: inline-block;
+            width: calc(100% - 60px);
+            vertical-align: top;
+        }
+        
+        .step-title {
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        
+        .step-description {
+            color: #555;
+            font-size: 1.1rem;
+        }
+        
+        button {
+            background: linear-gradient(to right, #6e8efb, #a777e3);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin: 10px 0;
+            font-weight: bold;
+            width: 100%;
+            max-width: 250px;
+        }
+        
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 7px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .final-result {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #2c3e50;
+            margin: 30px 0;
+            padding: 30px;
+            background-color: #e8f5e9;
+            border-radius: 15px;
+            border-left: 8px solid #4caf50;
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .emoji {
+            font-size: 4rem;
+            margin: 20px 0;
+        }
+        
+        .surprise-text {
+            font-size: 1.5rem;
+            margin: 20px 0;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Matematiksel Sihir Oyunu</h1>
+        
+        <div class="game-area">
+            <div id="step1" class="step">
+                <span class="step-number">1</span>
+                <div class="step-content">
+                    <div class="step-title">Aklınızdan bir sayı tutun</div>
+                    <div class="step-description">Bu sayıyı kimseye söylemeyin, sadece aklınızda tutun.</div>
+                </div>
+                <button id="step1Btn">Tuttum, İlerle!</button>
+            </div>
+            
+            <div id="step2" class="step hidden">
+                <span class="step-number">2</span>
+                <div class="step-content">
+                    <div class="step-title">Tuttuğunuz sayıyı 2 ile çarpın</div>
+                    <div class="step-description">Sonucu aklınızda tutun.</div>
+                </div>
+                <button id="step2Btn">Yaptım, İlerle!</button>
+            </div>
+            
+            <div id="step3" class="step hidden">
+                <span class="step-number">3</span>
+                <div class="step-content">
+                    <div class="step-title">Çıkan sonuca 10 ekleyin</div>
+                    <div class="step-description">Yeni sonucu aklınızda tutun.</div>
+                </div>
+                <button id="step3Btn">Yaptım, İlerle!</button>
+            </div>
+            
+            <div id="step4" class="step hidden">
+                <span class="step-number">4</span>
+                <div class="step-content">
+                    <div class="step-title">Bu sayıyı 2'ye bölün</div>
+                    <div class="step-description">Yeni sonucu aklınızda tutun.</div>
+                </div>
+                <button id="step4Btn">Yaptım, İlerle!</button>
+            </div>
+            
+            <div id="step5" class="step hidden">
+                <span class="step-number">5</span>
+                <div class="step-content">
+                    <div class="step-title">Bu sayıdan aklınızdan tuttuğunuz ilk sayıyı çıkarın</div>
+                    <div class="step-description">Yeni sonucu aklınızda tutun.</div>
+                </div>
+                <button id="step5Btn">Yaptım, İlerle!</button>
+            </div>
+            
+            <div id="step6" class="step hidden">
+                <span class="step-number">6</span>
+                <div class="step-content">
+                    <div class="step-title">Bu sayıyı 3 ile çarpın</div>
+                    <div class="step-description">Yeni sonucu aklınızda tutun.</div>
+                </div>
+                <button id="step6Btn">Yaptım, İlerle!</button>
+            </div>
+            
+            <div id="step7" class="step hidden">
+                <span class="step-number">7</span>
+                <div class="step-content">
+                    <div class="step-title">Bu sayıdan 5 çıkarın</div>
+                    <div class="step-description">Yeni sonucu aklınızda tutun.</div>
+                </div>
+                <button id="step7Btn">Yaptım, İlerle!</button>
+            </div>
+            
+            <div id="step8" class="step hidden">
+                <span class="step-number">8</span>
+                <div class="step-content">
+                    <div class="step-title">Bu sayıya 1 ekleyin</div>
+                    <div class="step-description">Sonucu aklınızda tutun.</div>
+                </div>
+                <button id="step8Btn">Sonucu Göster!</button>
+            </div>
+            
+            <div id="finalStep" class="hidden">
+                <div class="final-result">
+                    Aklınızdan tuttuğunuz sayı: 11
+                </div>
+                <div class="emoji">😲</div>
+                <div class="surprise-text">Şaşırdınız mı?</div>
+                <button id="restartBtn">Tekrar Oyna!</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Adımları yöneten JavaScript kodu
+        document.getElementById('step1Btn').addEventListener('click', function() {
+            document.getElementById('step1').classList.add('hidden');
+            document.getElementById('step2').classList.remove('hidden');
+        });
+        
+        document.getElementById('step2Btn').addEventListener('click', function() {
+            document.getElementById('step2').classList.add('hidden');
+            document.getElementById('step3').classList.remove('hidden');
+        });
+        
+        document.getElementById('step3Btn').addEventListener('click', function() {
+            document.getElementById('step3').classList.add('hidden');
+            document.getElementById('step4').classList.remove('hidden');
+        });
+        
+        document.getElementById('step4Btn').addEventListener('click', function() {
+            document.getElementById('step4').classList.add('hidden');
+            document.getElementById('step5').classList.remove('hidden');
+        });
+        
+        document.getElementById('step5Btn').addEventListener('click', function() {
+            document.getElementById('step5').classList.add('hidden');
+            document.getElementById('step6').classList.remove('hidden');
+        });
+        
+        document.getElementById('step6Btn').addEventListener('click', function() {
+            document.getElementById('step6').classList.add('hidden');
+            document.getElementById('step7').classList.remove('hidden');
+        });
+        
+        document.getElementById('step7Btn').addEventListener('click', function() {
+            document.getElementById('step7').classList.add('hidden');
+            document.getElementById('step8').classList.remove('hidden');
+        });
+        
+        document.getElementById('step8Btn').addEventListener('click', function() {
+            document.getElementById('step8').classList.add('hidden');
+            document.getElementById('finalStep').classList.remove('hidden');
+        });
+        
+        document.getElementById('restartBtn').addEventListener('click', function() {
+            document.getElementById('finalStep').classList.add('hidden');
+            document.getElementById('step1').classList.remove('hidden');
+        });
+    </script>
+</body>
+</html>
