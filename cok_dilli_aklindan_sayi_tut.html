@@ -1,10 +1,9 @@
 <!DOCTYPE html>
-<html lang="tr" data-supported-langs="tr,en,de,fr,ru,zh, ja ar, it,es">
-
+<html lang="tr" data-supported-langs="tr,en,de,fr,ru,zh,ja,ar,it,es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-   <meta name="google-site-verification" content="uswK2B50iEfcEiN0SocTVk6pWGvb_2hOWSVAOenbzMI" />
+    <meta name="google-site-verification" content="uswK2B50iEfcEiN0SocTVk6pWGvb_2hOWSVAOenbzMI" />
     
     <title>Aklından Sayı Tut Oyunu | Think of a Number Game | Multilingual Number Trick</title>
 
@@ -356,7 +355,7 @@
             
             <div id="finalStep" class="hidden">
                 <div class="final-result" id="final-result">
-                    The number you thought of: 11
+                    RESULT: 11
                 </div>
                 <div class="emoji">😲</div>
                 <div class="surprise-text" id="surprise-text">Are you surprised?</div>
@@ -394,7 +393,7 @@
                 step8Title: "Add 1 to this number",
                 step8Desc: "Keep the result in your mind.",
                 step8Btn: "Show the Result!",
-                finalResult: "The number you thought of: 11",
+                finalResult: "RESULT: 11",
                 surpriseText: "Are you surprised?",
                 restartBtn: "Play Again!"
             },
@@ -424,7 +423,7 @@
                 step8Title: "Bu sayıya 1 ekleyin",
                 step8Desc: "Sonucu aklınızda tutun.",
                 step8Btn: "Sonucu Göster!",
-                finalResult: "Aklınızdan tuttuğunuz sayı: 11",
+                finalResult: "SONUÇ: 11",
                 surpriseText: "Şaşırdınız mı?",
                 restartBtn: "Tekrar Oyna!"
             },
@@ -454,7 +453,7 @@
                 step8Title: "أضف ١ إلى هذا الرقم",
                 step8Desc: "احتفظ بالنتيجة في ذهنك.",
                 step8Btn: "اعرض النتيجة!",
-                finalResult: "الرقم الذي فكرت فيه: ١١",
+                finalResult: "النتيجة: ١١",
                 surpriseText: "هل أنت مندهش؟",
                 restartBtn: "العب مرة أخرى!"
             },
@@ -484,7 +483,7 @@
                 step8Title: "Ajoutez 1 à ce nombre",
                 step8Desc: "Gardez le résultat en tête.",
                 step8Btn: "Montrez le résultat!",
-                finalResult: "Le nombre que vous avez choisi : 11",
+                finalResult: "RÉSULTAT: 11",
                 surpriseText: "Êtes-vous surpris?",
                 restartBtn: "Rejouer!"
             },
@@ -514,7 +513,7 @@
                 step8Title: "Добавьте 1 к этому числу",
                 step8Desc: "Запомните результат.",
                 step8Btn: "Показать Результат!",
-                finalResult: "Число, которое вы загадали: 11",
+                finalResult: "РЕЗУЛЬТАТ: 11",
                 surpriseText: "Вы удивлены?",
                 restartBtn: "Играть Снова!"
             },
@@ -544,7 +543,7 @@
                 step8Title: "给这个数字加1",
                 step8Desc: "记住结果。",
                 step8Btn: "显示结果！",
-                finalResult: "你想的数字是：11",
+                finalResult: "结果: 11",
                 surpriseText: "你感到惊讶吗？",
                 restartBtn: "再玩一次！"
             },
@@ -574,7 +573,7 @@
                 step8Title: "この数字に1を加えてください",
                 step8Desc: "結果を覚えておいてください。",
                 step8Btn: "結果を表示！",
-                finalResult: "あなたが考えた数字：11",
+                finalResult: "結果: 11",
                 surpriseText: "驚きましたか？",
                 restartBtn: "もう一度遊ぶ！"
             },
@@ -604,7 +603,7 @@
                 step8Title: "Aggiungi 1 a questo numero",
                 step8Desc: "Tieni il risultato a mente.",
                 step8Btn: "Mostra il Risultato!",
-                finalResult: "Il numero che hai pensato: 11",
+                finalResult: "RISULTATO: 11",
                 surpriseText: "Sei sorpreso?",
                 restartBtn: "Gioca di Nuovo!"
             },
@@ -634,7 +633,7 @@
                 step8Title: "Suma 1 a este número",
                 step8Desc: "Mantén el resultado en tu mente.",
                 step8Btn: "¡Mostrar Resultado!",
-                finalResult: "El número que pensaste: 11",
+                finalResult: "RESULTADO: 11",
                 surpriseText: "¿Estás sorprendido?",
                 restartBtn: "¡Jugar de Nuevo!"
             },
@@ -664,13 +663,13 @@
                 step8Title: "Addieren Sie 1 zu dieser Zahl",
                 step8Desc: "Behalten Sie das Ergebnis im Kopf.",
                 step8Btn: "Ergebnis anzeigen!",
-                finalResult: "Die Zahl, an die Sie gedacht haben: 11",
+                finalResult: "ERGEBNIS: 11",
                 surpriseText: "Sind Sie überrascht?",
                 restartBtn: "Nochmal spielen!"
             }
         };
 
-        // Dil seçenekleri (alfabetik sırada)
+        // Dil seçenekleri (alfabetik sırada) - BAYRAKLAR EKLENDİ
         const languageOptions = [
             { code: 'ar', name: 'العربية', flag: '🇸🇦' },
             { code: 'de', name: 'Deutsch', flag: '🇩🇪' },
@@ -691,7 +690,10 @@
         function initDropdown() {
             const dropdownContent = document.getElementById('dropdownContent');
             
-            // Dil seçeneklerini ekle
+            // Önce dropdown içeriğini temizle
+            dropdownContent.innerHTML = '';
+            
+            // Dil seçeneklerini ekle - BAYRAKLAR EKLENDİ
             languageOptions.forEach(lang => {
                 const option = document.createElement('div');
                 option.className = 'language-option';
@@ -728,13 +730,13 @@
             dropdownContent.classList.toggle('show');
         }
         
-        // Dil değiştirme işlevi
+        // Dil değiştirme işlevi - BAYRAK EKLENDİ
         function changeLanguage(lang) {
             currentLang = lang;
             const translation = translations[lang];
             const currentLangOption = languageOptions.find(l => l.code === lang);
             
-            // Açılır menü butonunu güncelle
+            // Açılır menü butonunu güncelle - BAYRAK EKLENDİ
             document.getElementById('dropdownButton').innerHTML = `
                 <span>${currentLangOption.flag} ${currentLangOption.name}</span>
                 <span>▼</span>
