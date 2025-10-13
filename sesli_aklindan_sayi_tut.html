@@ -1,0 +1,1037 @@
+<!DOCTYPE html>
+<html lang="tr" data-supported-langs="tr,en,de,fr,ru,zh,ja,ar,it,es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="google-site-verification" content="uswK2B50iEfcEiN0SocTVk6pWGvb_2hOWSVAOenbzMI" />
+    
+    <title>Aklından Sayı Tut Oyunu | Think of a Number Game | Multilingual Number Trick</title>
+
+    <meta name="description" content="Çok dilli zeka oyunu: Aklından bir sayı tut! Türkçe, İngilizce, Almanca, Fransızca, Rusça, Çince ve daha fazla dilde oynayabileceğin interaktif bir oyun. Guess your number in multiple languages!">
+    <meta name="keywords" content="aklından sayı tut, sayı tahmin oyunu, zeka oyunu, akıl oyunu, number guessing game, çok dilli oyun">
+    <meta name="author" content="Namık Sabırlı">
+    <meta property="og:title" content="Aklından Sayı Tut Oyunu - Çok Dilli Zeka Oyunu">
+    <meta property="og:description" content="Aklından bir sayı tut, ben tahmin edeyim! Eğlenceli ve interaktif zeka oyunu.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://namiksabirli-png.github.io/oyunlarim/cok_dilli_aklindan_sayi_tut.html">
+    <meta property="og:image" content="https://namiksabirli-png.github.io/oyunlarim/cover.jpg">
+    <link rel="alternate" hreflang="x-default" href="https://namiksabirli-png.github.io/oyunlarim/cok_dilli_aklindan_sayi_tut.html" />
+    <link rel="alternate" hreflang="tr" href="https://namiksabirli-png.github.io/oyunlarim/cok_dilli_aklindan_sayi_tut.html" />
+    <link rel="alternate" hreflang="en" href="https://namiksabirli-png.github.io/oyunlarim/cok_dilli_aklindan_sayi_tut.html" />
+    <link rel="alternate" hreflang="de" href="https://namiksabirli-png.github.io/oyunlarim/cok_dilli_aklindan_sayi_tut.html" />
+    <link rel="alternate" hreflang="fr" href="https://namiksabirli-png.github.io/oyunlarim/cok_dilli_aklindan_sayi_tut.html" />
+    <link rel="alternate" hreflang="ru" href="https://namiksabirli-png.github.io/oyunlarim/cok_dilli_aklindan_sayi_tut.html" />
+    <link rel="alternate" hreflang="zh" href="https://namiksabirli-png.github.io/oyunlarim/cok_dilli_aklindan_sayi_tut.html" />
+   
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #6e8efb, #a777e3);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            width: 100%;
+            background-color: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            padding: 30px;
+            text-align: center;
+            position: relative;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 2.2rem;
+        }
+        
+        .top-controls {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 100;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .sound-toggle {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 10px 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 50px;
+            height: 45px;
+        }
+        
+        .sound-toggle:hover {
+            background: #e9ecef;
+        }
+        
+        .sound-toggle.muted {
+            background: #ffebee;
+            border-color: #ef5350;
+        }
+        
+        .language-dropdown {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .dropdown-button {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 10px 15px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+            min-width: 150px;
+            justify-content: space-between;
+        }
+        
+        .dropdown-button:hover {
+            background: #e9ecef;
+        }
+        
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: white;
+            min-width: 200px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+            border-radius: 5px;
+            z-index: 1;
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 5px;
+            right: 0;
+        }
+        
+        .dropdown-content.show {
+            display: block;
+        }
+        
+        .language-option {
+            padding: 10px 15px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            transition: background-color 0.2s;
+            border-bottom: 1px solid #f1f1f1;
+        }
+        
+        .language-option:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .language-flag {
+            margin-right: 10px;
+            font-size: 1.2rem;
+        }
+        
+        .language-name {
+            flex-grow: 1;
+            text-align: left;
+        }
+        
+        .game-area {
+            margin: 30px 0;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border-radius: 10px;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.05);
+        }
+        
+        .step {
+            margin-bottom: 25px;
+            padding: 20px;
+            border-radius: 8px;
+            background-color: white;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+            text-align: left;
+        }
+        
+        .step-number {
+            display: inline-block;
+            width: 35px;
+            height: 35px;
+            background: linear-gradient(to right, #6e8efb, #a777e3);
+            color: white;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 35px;
+            margin-right: 15px;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+        
+        .step-content {
+            display: inline-block;
+            width: calc(100% - 60px);
+            vertical-align: top;
+        }
+        
+        .step-title {
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        
+        .step-description {
+            color: #555;
+            font-size: 1.1rem;
+        }
+        
+        button {
+            background: linear-gradient(to right, #6e8efb, #a777e3);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin: 10px 0;
+            font-weight: bold;
+            width: 100%;
+            max-width: 250px;
+        }
+        
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 7px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .final-result {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #2c3e50;
+            margin: 30px 0;
+            padding: 30px;
+            background-color: #e8f5e9;
+            border-radius: 15px;
+            border-left: 8px solid #4caf50;
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .emoji {
+            font-size: 4rem;
+            margin: 20px 0;
+        }
+        
+        .surprise-text {
+            font-size: 1.5rem;
+            margin: 20px 0;
+            color: #333;
+        }
+        
+        .language-rtl {
+            direction: rtl;
+            text-align: right;
+        }
+        
+        .language-rtl .step {
+            text-align: right;
+        }
+        
+        .language-rtl .step-number {
+            margin-right: 0;
+            margin-left: 15px;
+        }
+        
+        .language-rtl .final-result {
+            border-left: none;
+            border-right: 8px solid #4caf50;
+        }
+        
+        .language-rtl .top-controls {
+            right: auto;
+            left: 20px;
+        }
+        
+        .language-rtl .dropdown-content {
+            right: auto;
+            left: 0;
+        }
+        
+        .language-rtl .language-flag {
+            margin-right: 0;
+            margin-left: 10px;
+        }
+        
+        .language-rtl .language-name {
+            text-align: right;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="top-controls">
+            <button class="sound-toggle" id="soundToggle" title="Sesi Aç/Kapat">🔊</button>
+            <div class="language-dropdown">
+                <div class="dropdown-button" id="dropdownButton">
+                    <span>🇺🇸 English</span>
+                    <span>▼</span>
+                </div>
+                <div class="dropdown-content" id="dropdownContent">
+                    <!-- Dil seçenekleri JavaScript ile eklenecek -->
+                </div>
+            </div>
+        </div>
+
+        <h1 id="title">Mathematical Magic Game</h1>
+        
+        <div class="game-area">
+            <div id="step1" class="step">
+                <span class="step-number">1</span>
+                <div class="step-content">
+                    <div class="step-title" id="step1-title">Think of a number</div>
+                    <div class="step-description" id="step1-desc">Don't tell anyone this number, just keep it in your mind.</div>
+                </div>
+                <button id="step1Btn">I've got it, Next!</button>
+            </div>
+            
+            <div id="step2" class="step hidden">
+                <span class="step-number">2</span>
+                <div class="step-content">
+                    <div class="step-title" id="step2-title">Multiply the number you thought by 2</div>
+                    <div class="step-description" id="step2-desc">Keep the result in your mind.</div>
+                </div>
+                <button id="step2Btn">I did it, Next!</button>
+            </div>
+            
+            <div id="step3" class="step hidden">
+                <span class="step-number">3</span>
+                <div class="step-content">
+                    <div class="step-title" id="step3-title">Add 10 to the result</div>
+                    <div class="step-description" id="step3-desc">Keep the new result in your mind.</div>
+                </div>
+                <button id="step3Btn">I did it, Next!</button>
+            </div>
+            
+            <div id="step4" class="step hidden">
+                <span class="step-number">4</span>
+                <div class="step-content">
+                    <div class="step-title" id="step4-title">Divide this number by 2</div>
+                    <div class="step-description" id="step4-desc">Keep the new result in your mind.</div>
+                </div>
+                <button id="step4Btn">I did it, Next!</button>
+            </div>
+            
+            <div id="step5" class="step hidden">
+                <span class="step-number">5</span>
+                <div class="step-content">
+                    <div class="step-title" id="step5-title">Subtract the first number you thought from this number</div>
+                    <div class="step-description" id="step5-desc">Keep the new result in your mind.</div>
+                </div>
+                <button id="step5Btn">I did it, Next!</button>
+            </div>
+            
+            <div id="step6" class="step hidden">
+                <span class="step-number">6</span>
+                <div class="step-content">
+                    <div class="step-title" id="step6-title">Multiply this number by 3</div>
+                    <div class="step-description" id="step6-desc">Keep the new result in your mind.</div>
+                </div>
+                <button id="step6Btn">I did it, Next!</button>
+            </div>
+            
+            <div id="step7" class="step hidden">
+                <span class="step-number">7</span>
+                <div class="step-content">
+                    <div class="step-title" id="step7-title">Subtract 5 from this number</div>
+                    <div class="step-description" id="step7-desc">Keep the new result in your mind.</div>
+                </div>
+                <button id="step7Btn">I did it, Next!</button>
+            </div>
+            
+            <div id="step8" class="step hidden">
+                <span class="step-number">8</span>
+                <div class="step-content">
+                    <div class="step-title" id="step8-title">Add 1 to this number</div>
+                    <div class="step-description" id="step8-desc">Don't tell the result, I'll tell it!</div>
+                </div>
+                <button id="step8Btn">If you're ready, click for the result!</button>
+            </div>
+            
+            <div id="finalStep" class="hidden">
+                <div class="final-result" id="final-result">
+                    RESULT: 11
+                </div>
+                <div class="emoji">😲</div>
+                <div class="surprise-text" id="surprise-text">Are you surprised?</div>
+                <button id="restartBtn">Play Again!</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Dil çevirileri
+        const translations = {
+            en: {
+                title: "Mathematical Magic Game",
+                step1Title: "Think of a number",
+                step1Desc: "Don't tell anyone this number, just keep it in your mind.",
+                step1Btn: "I've got it, Next!",
+                step2Title: "Multiply the number you thought by 2",
+                step2Desc: "Keep the result in your mind.",
+                step2Btn: "I did it, Next!",
+                step3Title: "Add 10 to the result",
+                step3Desc: "Keep the new result in your mind.",
+                step3Btn: "I did it, Next!",
+                step4Title: "Divide this number by 2",
+                step4Desc: "Keep the new result in your mind.",
+                step4Btn: "I did it, Next!",
+                step5Title: "Subtract the first number you thought from this number",
+                step5Desc: "Keep the new result in your mind.",
+                step5Btn: "I did it, Next!",
+                step6Title: "Multiply this number by 3",
+                step6Desc: "Keep the new result in your mind.",
+                step6Btn: "I did it, Next!",
+                step7Title: "Subtract 5 from this number",
+                step7Desc: "Keep the new result in your mind.",
+                step7Btn: "I did it, Next!",
+                step8Title: "Add 1 to this number",
+                step8Desc: "Don't tell the result, I'll tell it!",
+                step8Btn: "If you're ready, click for the result!",
+                finalResult: "RESULT: 11",
+                surpriseText: "Are you surprised?",
+                restartBtn: "Play Again!"
+            },
+            tr: {
+                title: "Matematiksel Sihir Oyunu",
+                step1Title: "Aklınızdan bir sayı tutun",
+                step1Desc: "Bu sayıyı kimseye söylemeyin, sadece aklınızda tutun.",
+                step1Btn: "Tuttum, İlerle!",
+                step2Title: "Tuttuğunuz sayıyı 2 ile çarpın",
+                step2Desc: "Sonucu aklınızda tutun.",
+                step2Btn: "Yaptım, İlerle!",
+                step3Title: "Çıkan sonuca 10 ekleyin",
+                step3Desc: "Yeni sonucu aklınızda tutun.",
+                step3Btn: "Yaptım, İlerle!",
+                step4Title: "Bu sayıyı 2'ye bölün",
+                step4Desc: "Yeni sonucu aklınızda tutun.",
+                step4Btn: "Yaptım, İlerle!",
+                step5Title: "Bu sayıdan aklınızdan tuttuğunuz ilk sayıyı çıkarın",
+                step5Desc: "Yeni sonucu aklınızda tutun.",
+                step5Btn: "Yaptım, İlerle!",
+                step6Title: "Bu sayıyı 3 ile çarpın",
+                step6Desc: "Yeni sonucu aklınızda tutun.",
+                step6Btn: "Yaptım, İlerle!",
+                step7Title: "Bu sayıdan 5 çıkarın",
+                step7Desc: "Yeni sonucu aklınızda tutun.",
+                step7Btn: "Yaptım, İlerle!",
+                step8Title: "Bu sayıya 1 ekleyin",
+                step8Desc: "Sonucu söylemeyin ben söylüyorum.",
+                step8Btn: "Hazırsanız Sonuç İçin Tıklayın!",
+                finalResult: "SONUÇ: 11",
+                surpriseText: "Şaşırdınız mı?",
+                restartBtn: "Tekrar Oyna!"
+            },
+            ar: {
+                title: "لعبة السحر الرياضي",
+                step1Title: "فكر في رقم",
+                step1Desc: "لا تخبر أي شخص بهذا الرقم، فقط احتفظ به في ذهنك.",
+                step1Btn: "فكرت في رقم، التالي!",
+                step2Title: "اضرب الرقم الذي فكرت فيه في ٢",
+                step2Desc: "احتفظ بالنتيجة في ذهنك.",
+                step2Btn: "فعلت ذلك، التالي!",
+                step3Title: "أضف ١٠ إلى النتيجة",
+                step3Desc: "احتفظ بالنتيجة الجديدة في ذهنك.",
+                step3Btn: "فعلت ذلك، التالي!",
+                step4Title: "اقسم هذا الرقم على ٢",
+                step4Desc: "احتفظ بالنتيجة الجديدة في ذهنك.",
+                step4Btn: "فعلت ذلك، التالي!",
+                step5Title: "اطرح الرقم الأول الذي فكرت فيه من هذا الرقم",
+                step5Desc: "احتفظ بالنتيجة الجديدة في ذهنك.",
+                step5Btn: "فعلت ذلك، التالي!",
+                step6Title: "اضرب هذا الرقم في ٣",
+                step6Desc: "احتفظ بالنتيجة الجديدة في ذهنك.",
+                step6Btn: "فعلت ذلك، التالي!",
+                step7Title: "اطرح ٥ من هذا الرقم",
+                step7Desc: "احتفظ بالنتيجة الجديدة في ذهنك.",
+                step7Btn: "فعلت ذلك، التالي!",
+                step8Title: "أضف ١ إلى هذا الرقم",
+                step8Desc: "لا تخبر بالنتيجة، سأخبرك بها!",
+                step8Btn: "إذا كنت مستعدًا، انقر لمعرفة النتيجة!",
+                finalResult: "النتيجة: ١١",
+                surpriseText: "هل أنت مندهش؟",
+                restartBtn: "العب مرة أخرى!"
+            },
+            fr: {
+                title: "Jeu de Magie Mathématique",
+                step1Title: "Pensez à un nombre",
+                step1Desc: "Ne dites ce nombre à personne, gardez-le simplement dans votre esprit.",
+                step1Btn: "J'ai choisi, Suivant!",
+                step2Title: "Multipliez le nombre choisi par 2",
+                step2Desc: "Gardez le résultat en tête.",
+                step2Btn: "J'ai fait, Suivant!",
+                step3Title: "Ajoutez 10 au résultat",
+                step3Desc: "Gardez le nouveau résultat en tête.",
+                step3Btn: "J'ai fait, Suivant!",
+                step4Title: "Divisez ce nombre par 2",
+                step4Desc: "Gardez le nouveau résultat en tête.",
+                step4Btn: "J'ai fait, Suivant!",
+                step5Title: "Soustrayez le premier nombre choisi de ce nombre",
+                step5Desc: "Gardez le nouveau résultat en tête.",
+                step5Btn: "J'ai fait, Suivant!",
+                step6Title: "Multipliez ce nombre par 3",
+                step6Desc: "Gardez le nouveau résultat en tête.",
+                step6Btn: "J'ai fait, Suivant!",
+                step7Title: "Soustrayez 5 de ce nombre",
+                step7Desc: "Gardez le nouveau résultat en tête.",
+                step7Btn: "J'ai fait, Suivant!",
+                step8Title: "Ajoutez 1 à ce nombre",
+                step8Desc: "Ne dites pas le résultat, je vais le dire!",
+                step8Btn: "Si vous êtes prêt, cliquez pour le résultat!",
+                finalResult: "RÉSULTAT: 11",
+                surpriseText: "Êtes-vous surpris?",
+                restartBtn: "Rejouer!"
+            },
+            ru: {
+                title: "Математическая Волшебная Игра",
+                step1Title: "Загадайте число",
+                step1Desc: "Не говорите это число никому, просто держите его в уме.",
+                step1Btn: "Загадал, Дальше!",
+                step2Title: "Умножьте загаданное число на 2",
+                step2Desc: "Запомните результат.",
+                step2Btn: "Сделал, Дальше!",
+                step3Title: "Добавьте 10 к результату",
+                step3Desc: "Запомните новый результат.",
+                step3Btn: "Сделал, Дальше!",
+                step4Title: "Разделите это число на 2",
+                step4Desc: "Запомните новый результат.",
+                step4Btn: "Сделал, Дальше!",
+                step5Title: "Вычтите из этого числа первое загаданное число",
+                step5Desc: "Запомните новый результат.",
+                step5Btn: "Сделал, Дальше!",
+                step6Title: "Умножьте это число на 3",
+                step6Desc: "Запомните новый результат.",
+                step6Btn: "Сделал, Дальше!",
+                step7Title: "Вычтите 5 из этого числа",
+                step7Desc: "Запомните новый результат.",
+                step7Btn: "Сделал, Дальше!",
+                step8Title: "Добавьте 1 к этому числу",
+                step8Desc: "Не говорите результат — я его скажу!",
+                step8Btn: "Готовы? Нажмите, чтобы увидеть результат!",
+                finalResult: "РЕЗУЛЬТАТ: 11",
+                surpriseText: "Вы удивлены?",
+                restartBtn: "Играть Снова!"
+            },
+            zh: {
+                title: "数学魔法游戏",
+                step1Title: "想一个数字",
+                step1Desc: "不要告诉任何人这个数字，只需记在脑子里。",
+                step1Btn: "我想好了，下一步！",
+                step2Title: "将你想的数字乘以2",
+                step2Desc: "记住结果。",
+                step2Btn: "完成了，下一步！",
+                step3Title: "给结果加10",
+                step3Desc: "记住新结果。",
+                step3Btn: "完成了，下一步！",
+                step4Title: "将这个数字除以2",
+                step4Desc: "记住新结果。",
+                step4Btn: "完成了，下一步！",
+                step5Title: "从这个数字中减去你最初想的数字",
+                step5Desc: "记住新结果。",
+                step5Btn: "完成了，下一步！",
+                step6Title: "将这个数字乘以3",
+                step6Desc: "记住新结果。",
+                step6Btn: "完成了，下一步！",
+                step7Title: "从这个数字中减去5",
+                step7Desc: "记住新结果。",
+                step7Btn: "完成了，下一步！",
+                step8Title: "给这个数字加1",
+                step8Desc: "不要说出结果，我来告诉你！",
+                step8Btn: "准备好了吗？点击查看结果！",
+                finalResult: "结果: 11",
+                surpriseText: "你感到惊讶吗？",
+                restartBtn: "再玩一次！"
+            },
+            ja: {
+                title: "数学マジックゲーム",
+                step1Title: "数字を考えてください",
+                step1Desc: "この数字を誰にも教えず、頭の中に留めておいてください。",
+                step1Btn: "考えました、次へ！",
+                step2Title: "考えた数字を2倍にしてください",
+                step2Desc: "結果を覚えておいてください。",
+                step2Btn: "やりました、次へ！",
+                step3Title: "結果に10を加えてください",
+                step3Desc: "新しい結果を覚えておいてください。",
+                step3Btn: "やりました、次へ！",
+                step4Title: "この数字を2で割ってください",
+                step4Desc: "新しい結果を覚えておいてください。",
+                step4Btn: "やりました、次へ！",
+                step5Title: "この数字から最初に考えた数字を引いてください",
+                step5Desc: "新しい結果を覚えておいてください。",
+                step5Btn: "やりました、次へ！",
+                step6Title: "この数字を3倍にしてください",
+                step6Desc: "新しい結果を覚えておいてください。",
+                step6Btn: "やりました、次へ！",
+                step7Title: "この数字から5を引いてください",
+                step7Desc: "新しい結果を覚えておいてください。",
+                step7Btn: "やりました、次へ！",
+                step8Title: "この数字に1を加えてください",
+                step8Desc: "結果は言わないで、私が言います！",
+                step8Btn: "準備はいいですか？クリックして結果を表示！",
+                finalResult: "結果: 11",
+                surpriseText: "驚きましたか？",
+                restartBtn: "もう一度遊ぶ！"
+            },
+            it: {
+                title: "Gioco di Magia Matematica",
+                step1Title: "Pensa a un numero",
+                step1Desc: "Non dire questo numero a nessuno, tienilo solo nella tua mente.",
+                step1Btn: "Ci sono, Avanti!",
+                step2Title: "Moltiplica il numero che hai pensato per 2",
+                step2Desc: "Tieni il risultato a mente.",
+                step2Btn: "Fatto, Avanti!",
+                step3Title: "Aggiungi 10 al risultato",
+                step3Desc: "Tieni il nuovo risultato a mente.",
+                step3Btn: "Fatto, Avanti!",
+                step4Title: "Dividi questo numero per 2",
+                step4Desc: "Tieni il nuovo risultato a mente.",
+                step4Btn: "Fatto, Avanti!",
+                step5Title: "Sottrai il primo numero che hai pensato da questo numero",
+                step5Desc: "Tieni il nuovo risultato a mente.",
+                step5Btn: "Fatto, Avanti!",
+                step6Title: "Moltiplica questo numero per 3",
+                step6Desc: "Tieni il nuovo risultato a mente.",
+                step6Btn: "Fatto, Avanti!",
+                step7Title: "Sottrai 5 da questo numero",
+                step7Desc: "Tieni il nuovo risultato a mente.",
+                step7Btn: "Fatto, Avanti!",
+                step8Title: "Aggiungi 1 a questo numero",
+                step8Desc: "Non dire il risultato, lo dirò io!",
+                step8Btn: "Se sei pronto, clicca per il risultato!",
+                finalResult: "RISULTATO: 11",
+                surpriseText: "Sei sorpreso?",
+                restartBtn: "Gioca di Nuovo!"
+            },
+            es: {
+                title: "Juego de Magia Matemática",
+                step1Title: "Piensa en un número",
+                step1Desc: "No le digas este número a nadie, solo mantenlo en tu mente.",
+                step1Btn: "¡Lo tengo, Siguiente!",
+                step2Title: "Multiplica el número que pensaste por 2",
+                step2Desc: "Mantén el resultado en tu mente.",
+                step2Btn: "¡Hecho, Siguiente!",
+                step3Title: "Suma 10 al resultado",
+                step3Desc: "Mantén el nuevo resultado en tu mente.",
+                step3Btn: "¡Hecho, Siguiente!",
+                step4Title: "Divide este número por 2",
+                step4Desc: "Mantén el nuevo resultado en tu mente.",
+                step4Btn: "¡Hecho, Siguiente!",
+                step5Title: "Resta el primer número que pensaste de este número",
+                step5Desc: "Mantén el nuevo resultado en tu mente.",
+                step5Btn: "¡Hecho, Siguiente!",
+                step6Title: "Multiplica este número por 3",
+                step6Desc: "Mantén el nuevo resultado en tu mente.",
+                step6Btn: "¡Hecho, Siguiente!",
+                step7Title: "Resta 5 de este número",
+                step7Desc: "Mantén el nuevo resultado en tu mente.",
+                step7Btn: "¡Hecho, Siguiente!",
+                step8Title: "Suma 1 a este número",
+                step8Desc: "No digas el resultado, ¡yo lo diré!",
+                step8Btn: "¡Si estás listo, haz clic para ver el resultado!",
+                finalResult: "RESULTADO: 11",
+                surpriseText: "¿Estás sorprendido?",
+                restartBtn: "¡Jugar de Nuevo!"
+            },
+            de: {
+                title: "Mathematisches Zauberspiel",
+                step1Title: "Denken Sie an eine Zahl",
+                step1Desc: "Verraten Sie diese Zahl niemandem, behalten Sie sie einfach im Kopf.",
+                step1Btn: "Ich hab's, Weiter!",
+                step2Title: "Multiplizieren Sie die Zahl, an die Sie gedacht haben, mit 2",
+                step2Desc: "Behalten Sie das Ergebnis im Kopf.",
+                step2Btn: "Erledigt, Weiter!",
+                step3Title: "Addieren Sie 10 zum Ergebnis",
+                step3Desc: "Behalten Sie das neue Ergebnis im Kopf.",
+                step3Btn: "Erledigt, Weiter!",
+                step4Title: "Teilen Sie diese Zahl durch 2",
+                step4Desc: "Behalten Sie das neue Ergebnis im Kopf.",
+                step4Btn: "Erledigt, Weiter!",
+                step5Title: "Subtrahieren Sie die erste Zahl, an die Sie gedacht haben, von dieser Zahl",
+                step5Desc: "Behalten Sie das neue Ergebnis im Kopf.",
+                step5Btn: "Erledigt, Weiter!",
+                step6Title: "Multiplizieren Sie diese Zahl mit 3",
+                step6Desc: "Behalten Sie das neue Ergebnis im Kopf.",
+                step6Btn: "Erledigt, Weiter!",
+                step7Title: "Subtrahieren Sie 5 von dieser Zahl",
+                step7Desc: "Behalten Sie das neue Ergebnis im Kopf.",
+                step7Btn: "Erledigt, Weiter!",
+                step8Title: "Addieren Sie 1 zu dieser Zahl",
+                step8Desc: "Sagen Sie das Ergebnis nicht, ich werde es sagen!",
+                step8Btn: "Wenn Sie bereit sind, klicken Sie für das Ergebnis!",
+                finalResult: "ERGEBNIS: 11",
+                surpriseText: "Sind Sie überrascht?",
+                restartBtn: "Nochmal spielen!"
+            }
+        };
+
+        // Dil seçenekleri
+        const languageOptions = [
+            { code: 'ar', name: 'العربية', flag: '🇸🇦' },
+            { code: 'de', name: 'Deutsch', flag: '🇩🇪' },
+            { code: 'en', name: 'English', flag: '🇺🇸' },
+            { code: 'es', name: 'Español', flag: '🇪🇸' },
+            { code: 'fr', name: 'Français', flag: '🇫🇷' },
+            { code: 'it', name: 'Italiano', flag: '🇮🇹' },
+            { code: 'ja', name: '日本語', flag: '🇯🇵' },
+            { code: 'ru', name: 'Русский', flag: '🇷🇺' },
+            { code: 'tr', name: 'Türkçe', flag: '🇹🇷' },
+            { code: 'zh', name: '中文', flag: '🇨🇳' }
+        ];
+
+        let currentLang = 'en';
+        let isSoundEnabled = true; // Ses açık/kapalı durumu
+
+        // Web Speech API - TTS
+        let availableVoices = [];
+        function loadVoices() {
+            availableVoices = window.speechSynthesis ? speechSynthesis.getVoices() : [];
+        }
+        if ('speechSynthesis' in window) {
+            speechSynthesis.onvoiceschanged = loadVoices;
+            loadVoices();
+        }
+
+        function pickVoiceForLang(langCode) {
+            if (!availableVoices || availableVoices.length === 0) return null;
+            const priorities = {
+                tr: ['tr', 'tr-TR'],
+                en: ['en-GB','en-US','en'],
+                de: ['de-DE','de'],
+                fr: ['fr-FR','fr'],
+                ru: ['ru-RU','ru'],
+                zh: ['zh-CN','zh-TW','zh'],
+                ja: ['ja-JP','ja'],
+                it: ['it-IT','it'],
+                es: ['es-ES','es'],
+                ar: ['ar-SA','ar']
+            };
+            const prefs = priorities[langCode] || [];
+            let voice = availableVoices.find(v => prefs.some(p => (v.lang || '').toLowerCase().startsWith(p.toLowerCase())));
+            if (!voice) voice = availableVoices.find(v => (v.lang || '').toLowerCase().startsWith((langCode || '').toLowerCase()));
+            if (!voice) voice = availableVoices.find(v => (v.lang || '').toLowerCase().startsWith('en'));
+            return voice || null;
+        }
+
+        // "Yeni sonucu aklınızda tutun" benzeri talimatları seslendirmeden hariç tut
+        function shouldSpeakSentence(lang, text) {
+            if (!text) return false;
+            const t = text.trim().toLowerCase();
+
+            const patternsByLang = {
+                tr: [
+                    'yeni sonucu aklınızda tutun',
+                    'sonucu aklınızda tutun'
+                ],
+                en: [
+                    'keep the new result in your mind',
+                    'keep the result in your mind'
+                ],
+                de: [
+                    'behalten sie das neue ergebnis im kopf',
+                    'behalten sie das ergebnis im kopf'
+                ],
+                fr: [
+                    'gardez le nouveau résultat en tête',
+                    'gardez le résultat en tête'
+                ],
+                ru: [
+                    'запомните новый результат',
+                    'запомните результат'
+                ],
+                zh: [
+                    '记住新结果',
+                    '记住结果'
+                ],
+                ja: [
+                    '新しい結果を覚えておいてください',
+                    '結果を覚えておいてください'
+                ],
+                it: [
+                    'tieni il nuovo risultato a mente',
+                    'tieni il risultato a mente'
+                ],
+                es: [
+                    'mantén el nuevo resultado en tu mente',
+                    'mantén el resultado en tu mente'
+                ],
+                ar: [
+                    'احتفظ بالنتيجة الجديدة في ذهنك',
+                    'احتفظ بالنتيجة في ذهنك'
+                ]
+            };
+
+            const patterns = patternsByLang[lang] || [];
+            return !patterns.some(p => t.includes(p));
+        }
+
+        function speakTextsForStep(lang, texts = []) {
+            if (!isSoundEnabled) return; // Ses kapalıysa çık
+            if (!('speechSynthesis' in window)) return;
+            const voice = pickVoiceForLang(lang);
+            if (!voice) return;
+
+            window.speechSynthesis.cancel();
+
+            const filtered = texts.filter(txt => shouldSpeakSentence(lang, txt));
+
+            setTimeout(() => {
+                filtered.forEach((t, idx) => {
+                    const utter = new SpeechSynthesisUtterance(t);
+                    utter.voice = voice;
+                    utter.rate = (lang === 'ar' || lang === 'ru' || lang === 'zh' || lang === 'ja') ? 0.95 : 1.0;
+                    utter.pitch = 1.0;
+                    setTimeout(() => {
+                        window.speechSynthesis.speak(utter);
+                    }, idx * 300);
+                });
+            }, 500);
+        }
+
+        function speakCurrentStep(stepIndex) {
+            const t = translations[currentLang];
+            if (!t) return;
+            const stepMap = {
+                1: [t.step1Title, t.step1Desc],
+                2: [t.step2Title, t.step2Desc],
+                3: [t.step3Title, t.step3Desc],
+                4: [t.step4Title, t.step4Desc],
+                5: [t.step5Title, t.step5Desc],
+                6: [t.step6Title, t.step6Desc],
+                7: [t.step7Title, t.step7Desc],
+                8: [t.step8Title, t.step8Desc]
+            };
+            const texts = stepMap[stepIndex] || [];
+            speakTextsForStep(currentLang, texts);
+        }
+
+        function speakOnPageLoadFirstStep() {
+            speakCurrentStep(1);
+        }
+
+        // Ses açma/kapatma butonu
+        function toggleSound() {
+            isSoundEnabled = !isSoundEnabled;
+            const soundBtn = document.getElementById('soundToggle');
+            if (isSoundEnabled) {
+                soundBtn.textContent = '🔊';
+                soundBtn.classList.remove('muted');
+                soundBtn.title = 'Sesi Kapat';
+            } else {
+                soundBtn.textContent = '🔇';
+                soundBtn.classList.add('muted');
+                soundBtn.title = 'Sesi Aç';
+                // Ses kapatıldığında devam eden konuşmaları durdur
+                if ('speechSynthesis' in window) {
+                    window.speechSynthesis.cancel();
+                }
+            }
+        }
+
+        // Açılır menüyü başlat
+        function initDropdown() {
+            const dropdownContent = document.getElementById('dropdownContent');
+            dropdownContent.innerHTML = '';
+            languageOptions.forEach(lang => {
+                const option = document.createElement('div');
+                option.className = 'language-option';
+                option.setAttribute('data-lang', lang.code);
+                option.innerHTML = `
+                    <span class="language-flag">${lang.flag}</span>
+                    <span class="language-name">${lang.name}</span>
+                `;
+                dropdownContent.appendChild(option);
+                
+                option.addEventListener('click', function() {
+                    const langCode = this.getAttribute('data-lang');
+                    changeLanguage(langCode);
+                    toggleDropdown();
+                    const visibleStepIndex = getVisibleStepIndex();
+                    if (visibleStepIndex) speakCurrentStep(visibleStepIndex);
+                });
+            });
+            
+            document.getElementById('dropdownButton').addEventListener('click', toggleDropdown);
+            
+            document.addEventListener('click', function(event) {
+                const dropdown = document.querySelector('.language-dropdown');
+                if (!dropdown.contains(event.target)) {
+                    document.getElementById('dropdownContent').classList.remove('show');
+                }
+            });
+        }
+        
+        function toggleDropdown() {
+            const dropdownContent = document.getElementById('dropdownContent');
+            dropdownContent.classList.toggle('show');
+        }
+        
+        function changeLanguage(lang) {
+            currentLang = lang;
+            const translation = translations[lang];
+            const currentLangOption = languageOptions.find(l => l.code === lang);
+            
+            document.getElementById('dropdownButton').innerHTML = `
+                <span>${currentLangOption.flag} ${currentLangOption.name}</span>
+                <span>▼</span>
+            `;
+            
+            document.getElementById('title').textContent = translation.title;
+            document.getElementById('step1-title').textContent = translation.step1Title;
+            document.getElementById('step1-desc').textContent = translation.step1Desc;
+            document.getElementById('step1Btn').textContent = translation.step1Btn;
+            document.getElementById('step2-title').textContent = translation.step2Title;
+            document.getElementById('step2-desc').textContent = translation.step2Desc;
+            document.getElementById('step2Btn').textContent = translation.step2Btn;
+            document.getElementById('step3-title').textContent = translation.step3Title;
+            document.getElementById('step3-desc').textContent = translation.step3Desc;
+            document.getElementById('step3Btn').textContent = translation.step3Btn;
+            document.getElementById('step4-title').textContent = translation.step4Title;
+            document.getElementById('step4-desc').textContent = translation.step4Desc;
+            document.getElementById('step4Btn').textContent = translation.step4Btn;
+            document.getElementById('step5-title').textContent = translation.step5Title;
+            document.getElementById('step5-desc').textContent = translation.step5Desc;
+            document.getElementById('step5Btn').textContent = translation.step5Btn;
+            document.getElementById('step6-title').textContent = translation.step6Title;
+            document.getElementById('step6-desc').textContent = translation.step6Desc;
+            document.getElementById('step6Btn').textContent = translation.step6Btn;
+            document.getElementById('step7-title').textContent = translation.step7Title;
+            document.getElementById('step7-desc').textContent = translation.step7Desc;
+            document.getElementById('step7Btn').textContent = translation.step7Btn;
+            document.getElementById('step8-title').textContent = translation.step8Title;
+            document.getElementById('step8-desc').textContent = translation.step8Desc;
+            document.getElementById('step8Btn').textContent = translation.step8Btn;
+            document.getElementById('final-result').textContent = translation.finalResult;
+            document.getElementById('surprise-text').textContent = translation.surpriseText;
+            document.getElementById('restartBtn').textContent = translation.restartBtn;
+            
+            if (lang === 'ar') {
+                document.documentElement.dir = 'rtl';
+                document.body.classList.add('language-rtl');
+            } else {
+                document.documentElement.dir = 'ltr';
+                document.body.classList.remove('language-rtl');
+            }
+        }
+
+        function getVisibleStepIndex() {
+            for (let i = 1; i <= 8; i++) {
+                const el = document.getElementById('step' + i);
+                if (el && !el.classList.contains('hidden')) return i;
+            }
+            return null;
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            initDropdown();
+
+            changeLanguage('en');
+
+            // Ses butonu event listener
+            document.getElementById('soundToggle').addEventListener('click', toggleSound);
+
+            speakOnPageLoadFirstStep();
+            
+            document.getElementById('step1Btn').addEventListener('click', function() {
+                document.getElementById('step1').classList.add('hidden');
+                document.getElementById('step2').classList.remove('hidden');
+                speakCurrentStep(2);
+            });
+            
+            document.getElementById('step2Btn').addEventListener('click', function() {
+                document.getElementById('step2').classList.add('hidden');
+                document.getElementById('step3').classList.remove('hidden');
+                speakCurrentStep(3);
+            });
+            
+            document.getElementById('step3Btn').addEventListener('click', function() {
+                document.getElementById('step3').classList.add('hidden');
+                document.getElementById('step4').classList.remove('hidden');
+                speakCurrentStep(4);
+            });
+            
+            document.getElementById('step4Btn').addEventListener('click', function() {
+                document.getElementById('step4').classList.add('hidden');
+                document.getElementById('step5').classList.remove('hidden');
+                speakCurrentStep(5);
+            });
+            
+            document.getElementById('step5Btn').addEventListener('click', function() {
+                document.getElementById('step5').classList.add('hidden');
+                document.getElementById('step6').classList.remove('hidden');
+                speakCurrentStep(6);
+            });
+            
+            document.getElementById('step6Btn').addEventListener('click', function() {
+                document.getElementById('step6').classList.add('hidden');
+                document.getElementById('step7').classList.remove('hidden');
+                speakCurrentStep(7);
+            });
+            
+            document.getElementById('step7Btn').addEventListener('click', function() {
+                document.getElementById('step7').classList.add('hidden');
+                document.getElementById('step8').classList.remove('hidden');
+                speakCurrentStep(8);
+            });
+            
+            document.getElementById('step8Btn').addEventListener('click', function() {
+                document.getElementById('step8').classList.add('hidden');
+                document.getElementById('finalStep').classList.remove('hidden');
+            });
+            
+            document.getElementById('restartBtn').addEventListener('click', function() {
+                document.getElementById('finalStep').classList.add('hidden');
+                document.getElementById('step1').classList.remove('hidden');
+                speakCurrentStep(1);
+            });
+        });
+    </script>
+    <footer style="margin-top:40px; text-align:center; font-size:1rem; color:#555;">
+      <h3>Dil Örnekleri / Language Samples 🌍</h3>
+      <p lang="tr">Aklınızdan bir sayı tutun!</p>
+      <p lang="en">Think of a number!</p>
+      <p lang="de">Denk dir eine Zahl aus!</p>
+      <p lang="fr">Pense à un nombre !</p>
+      <p lang="ru">Загадай число!</p>
+      <p lang="zh">想一个数字！</p>
+      <p lang="ja">数字を考えてください!</p>
+    </footer>
+</body>
+</html>
