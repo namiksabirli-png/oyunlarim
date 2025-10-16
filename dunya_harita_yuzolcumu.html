@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dünya Haritası - Yüzölçümü Hesaplama (TR Format)</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <!-- Leaflet Draw -->
+    <script src="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css" />
+
+    <!-- Turf.js alan hesaplama için -->
+    <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
+
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+        #map {
+            height: 100%;
+            width: 100%;
+        }
+        .info-box {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: #fff;
+            padding: 16px 18px;
+            border-radius: 10px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.18);
+            z-index: 1000;
+            min-width: 260px;
+        }
+        .info-box h3 {
+            margin: 0 0 8px 0;
+            font-size: 16px;
+            color: #333;
+        }
+        .info-box .area-value {
+            font-size: 22px;
+            font-weight: bold;
+            color: #1976d2;
+            margin: 6px 0 10px;
+        }
+        .clear-btn {
+            background-color: #f44336;
+            color: white;
+            border: none;
+            padding: 10px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 14px;
+        }
+        .clear-btn:hover {
+            background-color: #d32f2f;
+        }
+        .hint {
+            font-size: 12px;
+            color: #666;
+            margin-top: 10px;
+            line-height: 1.4;
+        }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+
+    <div class="info-box">
+        <h3>📍 Seçilen Bölge</h3>
+        <div>Yüzölçümü:</div>
+        <div class="area-value" id="area">Henüz seçilmedi</div>
+        <button class="clear-btn" onclick="clearDrawings()">Çizimleri Temizle</button>
+        <div class="hint">
+            Kalem (çokgen) aracıyla serbestçe çizin. Bitirmek için başlangıç noktasına tıklayın.
+            Düzenlemek/silmek için üstteki araçları kullanın.
+        </div>
+    </div>
+
+    <script>
+        // Haritayı oluştur
+        const map = L.map('map').setView([39, 35], 3);
+
+        // OpenStreetMap katmanı
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '© OpenStreetMap katkıda bulunanlar'
+        }).addTo(map);
+
+        // Çizim katmanı
+        const drawnItems = new L.FeatureGroup();
+        map.addLayer(drawnItems);
+
+        // Sadece polygon (kalem) açık, daire/kutu kapalı
+        const drawControl = new L.Control.Draw({
+            edit: {
+                featureGroup: drawnItems,
+                remove: true
+            },
+            draw: {
+                polygon: {
+                    allowIntersection: true,
+                    showArea: false, // Turf ile kendimiz hesaplayacağız
+                    drawError: { color: '#e74c3c', message: 'Geçersiz çokgen!' },
+                    shapeOptions: { color: '#1976d2', weight: 2, fillOpacity: 0.2 }
+                },
+                rectangle: false,
+                circle: false,
+                marker: false,
+                polyline: false,
+                circlemarker: false
+            }
+        });
+        map.addControl(drawControl);
+
+        // Türkçe sayı biçimlendirici (binlik: ., ondalık: ,)
+        const trFormatter = new Intl.NumberFormat('tr-TR', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+
+        // Çizim olayları
+        map.on(L.Draw.Event.CREATED, function (event) {
+            const layer = event.layer;
+            drawnItems.addLayer(layer);
+            calculateArea();
+        });
+
+        map.on(L.Draw.Event.EDITED, function () {
+            calculateArea();
+        });
+
+        map.on(L.Draw.Event.DELETED, function () {
+            calculateArea();
+        });
+
+        // Toplam yüzölçümünü hesapla (km²) ve TR formatında yaz
+        function calculateArea() {
+            let totalAreaM2 = 0;
+
+            drawnItems.eachLayer(function(layer) {
+                // Yalnızca polygon katmanlarında alan hesaplansın
+                if (layer && typeof layer.toGeoJSON === 'function') {
+                    const gj = layer.toGeoJSON();
+                    // Çizilen şekil Polygon veya MultiPolygon ise alan toplanır
+                    if (gj && gj.geometry && (gj.geometry.type === 'Polygon' || gj.geometry.type === 'MultiPolygon')) {
+                        const areaM2 = turf.area(gj); // m²
+                        totalAreaM2 += areaM2;
+                    }
+                }
+            });
+
+            const areaEl = document.getElementById('area');
+            if (totalAreaM2 > 0) {
+                const areaKm2 = totalAreaM2 / 1000000; // m² -> km²
+                areaEl.textContent = `${trFormatter.format(areaKm2)} km²`;
+            } else {
+                areaEl.textContent = 'Henüz seçilmedi';
+            }
+        }
+
+        // Çizimleri temizle
+        function clearDrawings() {
+            drawnItems.clearLayers();
+            document.getElementById('area').textContent = 'Henüz seçilmedi';
+        }
+    </script>
+</body>
+</html>
