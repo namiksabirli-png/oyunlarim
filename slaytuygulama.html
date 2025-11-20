@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sinematik Slayt Gösterisi</title>
+    <style>
+        body {
+            margin: 0;
+            background-color: #000;
+            color: white;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            user-select: none;
+            cursor: default; /* Başlangıçta imleç görünür */
+        }
+
+        /* Yükleme Ekranı */
+        #setup-screen {
+            text-align: center;
+            padding: 40px;
+            background: #1e1e1e;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            z-index: 10;
+            transition: opacity 0.5s;
+        }
+
+        .upload-btn {
+            display: block;
+            width: 250px;
+            margin: 15px auto;
+            padding: 15px;
+            cursor: pointer;
+            background-color: #333;
+            border: 1px solid #555;
+            color: white;
+            border-radius: 8px;
+            transition: 0.3s;
+            text-align: center;
+        }
+
+        .upload-btn:hover, .upload-btn.selected {
+            background-color: #3498db;
+            border-color: #3498db;
+        }
+
+        #start-btn {
+            background-color: #27ae60;
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 18px;
+            border-radius: 30px;
+            cursor: pointer;
+            margin-top: 20px;
+            font-weight: bold;
+            display: none;
+        }
+
+        input[type="file"] { display: none; }
+
+        /* Slayt Alanı */
+        #viewer {
+            display: none;
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%;
+            height: 100%;
+            background: black;
+        }
+
+        .img-container {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            position: relative;
+        }
+
+        #slide-img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            opacity: 0;
+            transform: scale(1);
+            transition: opacity 1s ease-in-out, transform 6s linear;
+        }
+
+        #slide-img.active {
+            opacity: 1;
+            transform: scale(1.15);
+        }
+
+        /* Kontrol Paneli - Başlangıçta gizli */
+        .controls {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+            opacity: 0; /* Varsayılan olarak gizli */
+            transition: opacity 0.5s ease; /* Yumuşak geçiş */
+            z-index: 20;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 12px 25px;
+            border-radius: 40px;
+            backdrop-filter: blur(5px);
+        }
+
+        /* JS ile eklenecek sınıf: Görünür yap */
+        .controls.visible {
+            opacity: 1;
+        }
+
+        .ctrl-btn {
+            background: transparent;
+            border: 1px solid rgba(255,255,255,0.6);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .ctrl-btn:hover { background: white; color: black; }
+        
+        #play-pause-btn { min-width: 90px; justify-content: center; }
+
+    </style>
+</head>
+<body>
+
+    <div id="setup-screen">
+        <h2>Sinematik Slayt v3</h2>
+        
+        <label for="img-upload" class="upload-btn" id="lbl-img">
+            📸 Fotoğrafları Seç
+        </label>
+        <input id="img-upload" type="file" accept="image/*" multiple onchange="checkFiles()">
+
+        <label for="music-upload" class="upload-btn" id="lbl-music">
+            🎵 Müzik Ekle
+        </label>
+        <input id="music-upload" type="file" accept="audio/*" onchange="musicSelected()">
+
+        <button id="start-btn" onclick="startShow()">▶ Slaytı Başlat</button>
+    </div>
+
+    <div id="viewer">
+        <div class="img-container">
+            <img id="slide-img" src="" alt="Slayt">
+        </div>
+        
+        <audio id="bg-music" loop></audio>
+
+        <div class="controls visible">
+            <button class="ctrl-btn" onclick="restartShow()">⏮ Baştan Al</button>
+            <button id="play-pause-btn" class="ctrl-btn" onclick="togglePlay()">⏸ Durdur</button>
+            <button class="ctrl-btn" onclick="toggleFullScreen()">⛶ Tam Ekran</button>
+            <button class="ctrl-btn" onclick="reloadPage()">❌ Çıkış</button>
+        </div>
+    </div>
+
+    <script>
+        let images = [];
+        let currentIndex = 0;
+        let slideInterval;
+        let isPlaying = false;
+        let hideControlsTimeout;
+        const DISPLAY_TIME = 5000; 
+
+        // --- Dosya İşlemleri ---
+        function checkFiles() {
+            const input = document.getElementById('img-upload');
+            if (input.files.length > 0) {
+                document.getElementById('lbl-img').classList.add('selected');
+                document.getElementById('lbl-img').innerText = `✅ ${input.files.length} Fotoğraf`;
+                document.getElementById('start-btn').style.display = 'inline-block';
+                images = Array.from(input.files).map(file => URL.createObjectURL(file));
+            }
+        }
+
+        function musicSelected() {
+            const input = document.getElementById('music-upload');
+            if (input.files.length > 0) {
+                const audioUrl = URL.createObjectURL(input.files[0]);
+                document.getElementById('bg-music').src = audioUrl;
+                document.getElementById('lbl-music').classList.add('selected');
+                document.getElementById('lbl-music').innerText = `✅ Müzik Hazır`;
+            }
+        }
+
+        // --- Slayt Kontrolü ---
+        function startShow() {
+            document.getElementById('setup-screen').style.display = 'none';
+            document.getElementById('viewer').style.display = 'block';
+            
+            playAudio();
+            isPlaying = true;
+            showSlide(0);
+            resetInterval();
+            
+            // Başlangıçta kontrolleri göster, sonra gizle
+            resetInactivityTimer();
+        }
+
+        function showSlide(index) {
+            const img = document.getElementById('slide-img');
+            img.classList.remove('active'); 
+
+            setTimeout(() => {
+                img.src = images[index];
+                img.onload = () => {
+                    if(isPlaying) img.classList.add('active'); 
+                    else {
+                         img.style.opacity = 1; 
+                         img.style.transform = "scale(1.0)";
+                    }
+                };
+            }, 1000); 
+        }
+
+        function nextSlide() {
+            currentIndex = (currentIndex + 1) % images.length;
+            showSlide(currentIndex);
+        }
+
+        function resetInterval() {
+            clearInterval(slideInterval);
+            slideInterval = setInterval(nextSlide, DISPLAY_TIME);
+        }
+
+        // --- Buton Fonksiyonları ---
+        function togglePlay() {
+            const btn = document.getElementById('play-pause-btn');
+            const audio = document.getElementById('bg-music');
+
+            if (isPlaying) {
+                clearInterval(slideInterval);
+                audio.pause();
+                btn.innerText = "▶ Devam Et";
+                isPlaying = false;
+            } else {
+                playAudio();
+                btn.innerText = "⏸ Durdur";
+                isPlaying = true;
+                document.getElementById('slide-img').classList.add('active');
+                resetInterval();
+            }
+        }
+
+        function restartShow() {
+            currentIndex = 0;
+            const audio = document.getElementById('bg-music');
+            audio.currentTime = 0;
+            if (!isPlaying) {
+                document.getElementById('play-pause-btn').innerText = "⏸ Durdur";
+                isPlaying = true;
+            }
+            playAudio();
+            showSlide(0);
+            resetInterval();
+        }
+
+        function playAudio() {
+            const audio = document.getElementById('bg-music');
+            if(audio.src) {
+                audio.play().catch(e => console.log("Otomatik oynatma engellendi"));
+            }
+        }
+
+        function toggleFullScreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen();
+            } else {
+                if (document.exitFullscreen) document.exitFullscreen();
+            }
+        }
+
+        function reloadPage() {
+            location.reload();
+        }
+
+        // --- AKILLI GİZLEME (Mouse Takibi) ---
+        const controlsDiv = document.querySelector('.controls');
+
+        document.addEventListener('mousemove', () => {
+            // Fare hareket ettiğinde:
+            // 1. Kontrolleri göster
+            controlsDiv.classList.add('visible');
+            // 2. Mouse imlecini göster
+            document.body.style.cursor = 'default';
+            
+            // Sayaç varsa sıfırla
+            resetInactivityTimer();
+        });
+
+        function resetInactivityTimer() {
+            clearTimeout(hideControlsTimeout);
+            
+            // 3 Saniye (3000ms) sonra gizle
+            hideControlsTimeout = setTimeout(() => {
+                // Eğer fare butonların üzerindeyse gizleme
+                if (!controlsDiv.matches(':hover')) {
+                    controlsDiv.classList.remove('visible');
+                    document.body.style.cursor = 'none'; // İmleci de yok et
+                }
+            }, 3000);
+        }
+
+        // Butonların üzerindeyken gizlenmeyi engelle
+        controlsDiv.addEventListener('mouseenter', () => {
+            clearTimeout(hideControlsTimeout);
+            controlsDiv.classList.add('visible');
+        });
+
+    </script>
+</body>
+</html>
