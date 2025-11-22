@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Güvenli Video Görüşme (ID & Şifre)</title>
+    <!-- Tailwind CSS (Estetik ve Duyarlılık için) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- PeerJS Kütüphanesi (Bağlantı için) -->
+    <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
+    <style>
+        /* Inter fontunu ayarla */
+        body { font-family: 'Inter', sans-serif; }
+        /* Video elementlerine ayna modu uygula */
+        .video-mirror { transform: scaleX(-1); }
+        /* Görüntü kutularının en boy oranını koru */
+        .video-box { aspect-ratio: 16 / 9; }
+    </style>
+</head>
+<body class="bg-gray-900 text-white min-h-screen flex flex-col items-center p-4">
+
+    <!-- Kontrol Paneli -->
+    <div class="control-panel bg-gray-800 p-4 sm:p-6 rounded-xl shadow-2xl flex flex-col md:flex-row gap-4 items-center w-full max-w-4xl">
+        
+        <!-- Senin ID'n -->
+        <div class="flex flex-col items-center md:items-start p-3 bg-gray-700 rounded-lg w-full md:w-auto">
+            <span class="text-sm font-medium text-gray-400">Senin ID'n:</span>
+            <div class="my-id-display font-mono text-xl text-green-400 mt-1" id="myId">Oluşturuluyor...</div>
+        </div>
+        
+        <div class="h-1 bg-gray-700 w-full md:w-px md:h-12 md:mx-4"></div>
+
+        <!-- Bağlantı Girişleri -->
+        <div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto md:flex-grow items-center">
+            <input type="text" id="remoteIdInput" placeholder="Karşı Tarafın ID'si" class="p-2.5 rounded-lg border border-gray-600 bg-gray-700 text-white placeholder-gray-400 focus:ring-blue-500 focus:border-blue-500 w-full sm:w-40">
+            <input type="password" id="passwordInput" placeholder="Bağlantı Şifresi" class="p-2.5 rounded-lg border border-gray-600 bg-gray-700 text-white placeholder-gray-400 focus:ring-blue-500 focus:border-blue-500 w-full sm:w-40">
+            <button onclick="connectToPeer()" class="p-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow-md transition duration-150 ease-in-out w-full sm:w-28">Bağlan</button>
+        </div>
+    </div>
+
+    <!-- Durum Mesajı -->
+    <div id="status" class="mt-4 text-sm text-gray-400">Durum: Hazır</div>
+
+    <!-- Video Alanları -->
+    <div class="video-container flex flex-wrap justify-center gap-6 mt-6 w-full max-w-6xl">
+        
+        <!-- Yerel Kamera (Sen) -->
+        <div class="video-box relative w-full sm:w-5/12 max-w-md bg-black rounded-xl overflow-hidden shadow-2xl border-4 border-gray-700">
+            <video id="localVideo" autoplay muted class="w-full h-full object-cover video-mirror"></video>
+            <div class="label absolute bottom-3 left-3 bg-black bg-opacity-60 text-white px-3 py-1 text-xs rounded-md">Sen (Yerel)</div>
+        </div>
+        
+        <!-- Uzak Kamera (Karşı Taraf) -->
+        <div class="video-box relative w-full sm:w-5/12 max-w-md bg-black rounded-xl overflow-hidden shadow-2xl border-4 border-gray-700">
+            <video id="remoteVideo" autoplay class="w-full h-full object-cover"></video>
+            <div class="label absolute bottom-3 left-3 bg-black bg-opacity-60 text-white px-3 py-1 text-xs rounded-md">Bağlanılan Kişi (Uzak)</div>
+        </div>
+    </div>
+
+    <script>
+        // --- AYARLAR ---
+        // Bu şifre her iki tarafta da aynı olmalı. Test amaçlı 123 bırakıldı.
+        const EXPECTED_PASSWORD = "123"; 
+        // ----------------
+
+        let peer = null;
+        let localStream = null;
+        const myIdEl = document.getElementById('myId');
+        const statusEl = document.getElementById('status');
+        const remoteVideoEl = document.getElementById('remoteVideo');
+        
+        // Kamerayı başlat
+        navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+            .then(stream => {
+                localStream = stream;
+                document.getElementById('localVideo').srcObject = stream;
+                initPeer(); // Kamera açılınca Peer'ı başlat
+            })
+            .catch(err => {
+                console.error("Kamera hatası:", err);
+                statusEl.innerText = "Hata: Kameraya erişilemedi veya izin reddedildi.";
+            });
+
+        function initPeer() {
+            // PeerJS sunucusuna bağlan (ID'yi otomatik oluşturur)
+            peer = new Peer();
+
+            peer.on('open', (id) => {
+                myIdEl.innerText = id;
+                statusEl.innerText = "Durum: ID Oluşturuldu, arama bekleniyor...";
+            });
+
+            // GELEN ARAMALARI OTOMATİK OLARAK ŞİFRE İLE KARŞILA
+            peer.on('call', (call) => {
+                const remoteId = call.peer;
+                // Arayan tarafından gönderilen metadata içindeki şifreyi al
+                const incomingPassword = call.metadata && call.metadata.password ? call.metadata.password : null;
+
+                statusEl.innerText = `Durum: ${remoteId} sizi arıyor... Şifre kontrol ediliyor.`;
+                
+                // Şifre doğrulama
+                if (incomingPassword === EXPECTED_PASSWORD) {
+                    call.answer(localStream); // Aramayı kabul et ve kendi görüntünü gönder
+                    
+                    statusEl.innerText = `Durum: ${remoteId} ile güvenli bağlantı kuruldu!`;
+                    
+                    call.on('stream', (remoteStream) => {
+                        remoteVideoEl.srcObject = remoteStream;
+                    });
+                    
+                    call.on('close', () => {
+                        statusEl.innerText = `Durum: ${remoteId} bağlantıyı sonlandırdı.`;
+                        remoteVideoEl.srcObject = null;
+                    });
+                } else {
+                    statusEl.innerText = `HATA: ${remoteId} tarafından yanlış şifre gönderildi. Bağlantı reddedildi.`;
+                    call.close();
+                }
+            });
+
+            peer.on('error', (err) => {
+                console.error(err);
+                statusEl.innerText = "Hata: PeerJS Bağlantı Hatası - " + err.type;
+            });
+        }
+
+        // ARAMA YAPMA FONKSİYONU
+        function connectToPeer() {
+            if (!peer || !localStream) {
+                statusEl.innerText = "HATA: Kamera veya PeerJS henüz hazır değil.";
+                return;
+            }
+
+            const remoteId = document.getElementById('remoteIdInput').value;
+            const password = document.getElementById('passwordInput').value;
+
+            if (!remoteId) {
+                statusEl.innerText = "HATA: Lütfen karşı tarafın ID'sini girin.";
+                return;
+            }
+            
+            // Arama yapmadan önce kendi şifresini kontrol et
+            if (password !== EXPECTED_PASSWORD) {
+                statusEl.innerText = "HATA: Hatalı şifre girdiniz! (Test şifresi: 123)";
+                return;
+            }
+
+            statusEl.innerText = "Durum: Aranıyor...";
+
+            // Karşı tarafı ara ve şifreyi metadata olarak gönder
+            const call = peer.call(remoteId, localStream, {
+                metadata: { password: password }
+            });
+            
+            call.on('stream', (remoteStream) => {
+                statusEl.innerText = "Durum: Bağlantı başarılı!";
+                remoteVideoEl.srcObject = remoteStream;
+            });
+
+            call.on('error', (err) => {
+                console.error("Arama Hatası:", err);
+                statusEl.innerText = "HATA: Arama sırasında bir hata oluştu: " + err.type;
+                remoteVideoEl.srcObject = null;
+            });
+
+            call.on('close', () => {
+                statusEl.innerText = "Durum: Arama sonlandırıldı.";
+                remoteVideoEl.srcObject = null;
+            });
+        }
+    </script>
+</body>
+</html>
