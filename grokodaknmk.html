@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pro Video Görüşme & Ekran Paylaşımı</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; overflow-x: hidden; }
+        .video-mirror { transform: scaleX(-1); }
+        .video-box { transition: all 0.5s ease-in-out; }
+        .video-container { transition: all 0.5s ease-in-out; }
+
+        /* Minimize modu */
+        .minimized-layout {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            flex-direction: column;
+            width: 220px;
+            gap: 12px;
+            z-index: 50;
+        }
+        .minimized-layout .video-box {
+            width: 100% !important;
+            border-width: 3px;
+            border-color: #60a5fa;
+        }
+        .minimized-layout .label {
+            font-size: 0.7rem;
+            padding: 4px 8px;
+        }
+
+        /* Ekran paylaşım alanı */
+        #screenShareStage {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: #0f172a;
+            z-index: 10;
+            align-items: center;
+            justify-content: center;
+        }
+        #screenVideo {
+            max-width: 100%;
+            max-height: 100%;
+            border: 4px solid #6366f1;
+            border-radius: 12px;
+        }
+
+        /* Çağrı isteği bildirimi */
+        #incomingCallModal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #1f2937;
+            padding: 2rem;
+            border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.8);
+            z-index: 100;
+            text-align: center;
+            display: none;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white min-h-screen flex flex-col items-center p-4">
+
+    <!-- Ekran Paylaşım Alanı -->
+    <div id="screenShareStage" class="flex">
+        <video id="screenVideo" autoplay playsinline></video>
+        <div class="absolute bottom-10 bg-black bg-opacity-80 px-6 py-3 rounded-xl text-white font-bold text-lg animate-pulse">
+            Ekranınız Paylaşılıyor
+        </div>
+    </div>
+
+    <!-- Gelen Çağrı Bildirimi -->
+    <div id="incomingCallModal">
+        <p class="text-xl mb-6">Bir çağrı var!</p>
+        <div class="flex gap-4 justify-center">
+            <button onclick="answerCall()" class="px-8 py-3 bg-green-600 hover:bg-green-700 rounded-lg font-bold">Kabul Et</button>
+            <button onclick="rejectCall()" class="px-8 py-3 bg-red-600 hover:bg-red-700 rounded-lg font-bold">Reddet</button>
+        </div>
+    </div>
+
+    <!-- Kontrol Paneli -->
+    <div class="relative z-50 control-panel bg-gray-800 p-5 rounded-2xl shadow-2xl flex flex-col md:flex-row gap-5 items-center w-full max-w-5xl mb-6">
+        <div class="flex flex-col items-center md:items-start bg-gray-700 px-5 py-3 rounded-lg">
+            <span class="text-sm text-gray-400">Senin ID'n:</span>
+            <div class="font-mono text-xl text-green-400 mt-1 select-all" id="myId">...</div>
+        </div>
+
+        <div class="hidden md:block h-12 w-px bg-gray-600"></div>
+
+        <div class="flex flex-col sm:flex-row gap-3 w-full items-center">
+            <input type="text" id="remoteIdInput" placeholder="Karşı ID" class="p-3 rounded-lg bg-gray-700 border border-gray-600 text-white w-full sm:w-40">
+            <input type="password" id="passwordInput" placeholder="Şifre" class="p-3 rounded-lg bg-gray-700 border border-gray-600 text-white w-full sm:w-32">
+            <button onclick="connectToPeer()" class="px-5 py-3 bg-blue-600 hover:bg-blue-700 font-bold rounded-lg">Ara</button>
+            
+            <button onclick="toggleScreenShare()" id="shareBtn" class="px-5 py-3 bg-purple-600 hover:bg-purple-700 font-bold rounded-lg flex items-center gap-2">
+                <span>Ekran</span> <span id="shareBtnText">Paylaş</span>
+            </button>
+
+            <button onclick="endCall()" class="px-6 py-3 bg-red-600 hover:bg-red-700 font-bold rounded-lg">Görüşmeyi Bitir</button>
+        </div>
+    </div>
+
+    <div id="status" class="mb-4 text-lg font-medium text-gray-300">Durum: Hazır</div>
+
+    <!-- Video Alanı -->
+    <div id="cameraContainer" class="video-container relative z-40 flex flex-wrap justify-center gap-8 w-full max-w-6xl">
+        <div class="video-box relative w-full sm:w-5/12 max-w-md bg-black rounded-2xl overflow-hidden shadow-2xl border-4 border-gray-700">
+            <video id="localVideo" autoplay muted playsinline class="w-full h-full object-cover video-mirror"></video>
+            <div class="label absolute bottom-3 left-3 bg-black bg-opacity-70 px-4 py-2 rounded-lg text-sm">Sen</div>
+        </div>
+
+        <div class="video-box relative w-full sm:w-5/12 max-w-md bg-black rounded-2xl overflow-hidden shadow-2xl border-4 border-gray-700">
+            <video id="remoteVideo" autoplay playsinline class="w-full h-full object-cover"></video>
+            <div class="label absolute bottom-3 left-3 bg-black bg-opacity-70 px-4 py-2 rounded-lg text-sm">Karşı Taraf</div>
+        </div>
+    </div>
+
+    <script>
+        const EXPECTED_PASSWORD = "123";
+        
+        let peer = null;
+        let localStream = null;
+        let currentCall = null;
+        let screenStream = null;
+        let isSharing = false;
+        let incomingCall = null; // Gelen çağrıyı tut
+
+        const myIdEl = document.getElementById('myId');
+        const statusEl = document.getElementById('status');
+        const localVideoEl = document.getElementById('localVideo');
+        const remoteVideoEl = document.getElementById('remoteVideo');
+        const cameraContainer = document.getElementById('cameraContainer');
+        const screenStage = document.getElementById('screenShareStage');
+        const screenVideo = document.getElementById('screenVideo');
+        const shareBtnText = document.getElementById('shareBtnText');
+        const incomingModal = document.getElementById('incomingCallModal');
+
+        // Kamera ve mikrofonu yüksek kaliteli başlat
+        navigator.mediaDevices.getUserMedia({ 
+            video: { width: { ideal: 1280 }, height: { ideal: 720 } },
+            audio: { 
+                echoCancellation: true,
+                noiseSuppression: true,
+                autoGainControl: true,
+                sampleRate: 48000
+            }
+        })
+        .then(stream => {
+            localStream = stream;
+            localVideoEl.srcObject = stream;
+            initPeer();
+        })
+        .catch(err => {
+            statusEl.innerText = "Kamera/Mikrofon izni gerekli!";
+            console.error(err);
+        });
+
+        function initPeer() {
+            peer = new Peer();
+            peer.on('open', id => {
+                myIdEl.innerText = id;
+                statusEl.innerText = "Bağlantı hazır. ID'n: " + id;
+            });
+
+            // Gelen çağrı
+            peer.on('call', call => {
+                incomingCall = call;
+                const callerId = call.peer;
+                incomingModal.style.display = 'block';
+                statusEl.innerText = `${callerId} arıyor...`;
+            });
+        }
+
+        // Çağrıyı kabul et
+        function answerCall() {
+            if (!incomingCall) return;
+            const password = incomingCall.metadata?.password;
+            if (password !== EXPECTED_PASSWORD) {
+                alert("Hatalı şifre!");
+                rejectCall();
+                return;
+            }
+
+            incomingModal.style.display = 'none';
+            incomingCall.answer(localStream);
+            handleCall(incomingCall);
+            statusEl.innerText = "Bağlantı kuruldu!";
+        }
+
+        // Çağrıyı reddet
+        function rejectCall() {
+            if (incomingCall) {
+                incomingCall.close();
+                incomingCall = null;
+            }
+            incomingModal.style.display = 'none';
+            statusEl.innerText = "Çağrı reddedildi.";
+        }
+
+        // Arama yap
+        function connectToPeer() {
+            const remoteId = document.getElementById('remoteIdInput').value.trim();
+            const password = document.getElementById('passwordInput').value;
+
+            if (!remoteId) return alert("Karşı taraf ID gir!");
+            if (password !== EXPECTED_PASSWORD) return alert("Şifre yanlış!");
+
+            statusEl.innerText = `${remoteId} aranıyor...`;
+            const call = peer.call(remoteId, localStream, { metadata: { password } });
+            handleCall(call);
+        }
+
+        function handleCall(call) {
+            currentCall = call;
+
+            call.on('stream', remoteStream => {
+                // Ses seviyesini artır
+                remoteVideoEl.srcObject = remoteStream;
+                remoteVideoEl.volume = 1.0;
+                
+                // Ekstra ses güçlendirme (bazı tarayıcılarda çalışır)
+                if (remoteVideoEl.captureStream) {
+                    const audioContext = new AudioContext();
+                    const source = audioContext.createMediaStreamSource(remoteStream);
+                    const gainNode = audioContext.createGain();
+                    gainNode.gain.value = 3; // 3x ses artır
+                    source.connect(gainNode);
+                    gainNode.connect(audioContext.destination);
+                }
+            });
+
+            call.on('close', () => {
+                endCall();
+            });
+        }
+
+        // Görüşmeyi bitir
+        function endCall() {
+            if (currentCall) {
+                currentCall.close();
+                currentCall = null;
+            }
+            if (screenStream) stopScreenShare();
+            remoteVideoEl.srcObject = null;
+            statusEl.innerText = "Görüşme bitti.";
+            incomingModal.style.display = 'none';
+        }
+
+        // Ekran paylaşımı
+        async function toggleScreenShare() {
+            if (!currentCall) return alert("Önce görüşme başlat!");
+
+            if (!isSharing) {
+                try {
+                    screenStream = await navigator.mediaDevices.getDisplayMedia({ 
+                        video: { cursor: "always" }, 
+                        audio: true 
+                    });
+
+                    // Kamerayı kapat (iç içe görüntü olmasın diye)
+                    localStream.getVideoTracks().forEach(t => t.enabled = false);
+                    localVideoEl.style.display = 'none';
+
+                    // Arayüzü küçült
+                    cameraContainer.classList.add('minimized-layout');
+                    cameraContainer.classList.remove('justify-center');
+                    screenStage.style.display = 'flex';
+                    screenVideo.srcObject = screenStream;
+                    shareBtnText.innerText = "Durdur";
+
+                    // Karşı tarafa ekranı gönder
+                    const videoTrack = screenStream.getVideoTracks()[0];
+                    const sender = currentCall.peerConnection.getSenders().find(s => s.track?.kind === 'video');
+                    if (sender) sender.replaceTrack(videoTrack);
+
+                    videoTrack.onended = () => stopScreenShare();
+                    isSharing = true;
+
+                } catch (err) {
+                    console.log("Ekran paylaşımı iptal edildi");
+                }
+            } else {
+                stopScreenShare();
+            }
+        }
+
+        function stopScreenShare() {
+            if (!isSharing) return;
+
+            if (screenStream) {
+                screenStream.getTracks().forEach(t => t.stop());
+                screenStream = null;
+            }
+
+            // Kamerayı tekrar aç
+            localStream.getVideoTracks().forEach(t => t.enabled = true);
+            localVideoEl.style.display = 'block';
+
+            // Arayüzü normale döndür
+            screenStage.style.display = 'none';
+            cameraContainer.classList.remove('minimized-layout');
+            cameraContainer.classList.add('justify-center');
+            shareBtnText.innerText = "Paylaş";
+
+            // Kamerayı tekrar gönder
+            if (currentCall && localStream) {
+                const cameraTrack = localStream.getVideoTracks()[0];
+                const sender = currentCall.peerConnection.getSenders().find(s => s.track?.kind === 'video');
+                if (sender && cameraTrack) sender.replaceTrack(cameraTrack);
+            }
+
+            isSharing = false;
+        }
+    </script>
+</body>
+</html>
