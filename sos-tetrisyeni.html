@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>SOS Blocks</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    height: 100%;
+    background: radial-gradient(ellipse at top, #1e2a4a 0%, #0d1220 70%, #070a14 100%);
+    font-family: 'Inter', -apple-system, 'Segoe UI', system-ui, sans-serif;
+    color: #e8edf7;
+    overflow: hidden;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: none;
+  }
+  .wrap {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    max-width: 500px;
+    margin: 0 auto;
+    padding: 0 8px;
+  }
+  .hud {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 16px;
+    margin: 10px 0;
+    font-size: 14px;
+    background: rgba(255,255,255,0.05);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 18px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+  }
+  .hud-item { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+  .hud-label { font-size: 10px; letter-spacing: 2px; color: #8b95b0; text-transform: uppercase; font-weight: 600; }
+  .hud-value { font-size: 22px; font-weight: 800; color: #fff; }
+  .hud-value.sos { background: linear-gradient(135deg, #ff7eb3, #ff5e8a); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+  #game {
+    flex: 1;
+    width: 100%;
+    display: block;
+    border-radius: 20px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5), inset 0 0 0 1px rgba(255,255,255,0.06);
+  }
+  .controls {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+    padding: 12px 4px 18px;
+  }
+  .btn {
+    position: relative;
+    background: linear-gradient(145deg, rgba(255,255,255,0.1), rgba(255,255,255,0.03));
+    border: 1px solid rgba(255,255,255,0.1);
+    color: #e8edf7;
+    font-size: 22px;
+    font-weight: bold;
+    padding: 18px 0;
+    border-radius: 16px;
+    cursor: pointer;
+    backdrop-filter: blur(8px);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.12);
+    transition: transform 0.06s ease, background 0.1s ease;
+  }
+  .btn:active, .btn.active {
+    transform: scale(0.93);
+    background: linear-gradient(145deg, #6c7cff, #5468ff);
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(84,104,255,0.5);
+  }
+  .btn.accent:active { background: linear-gradient(145deg, #ff7eb3, #ff5e8a); box-shadow: 0 2px 8px rgba(255,94,138,0.5); }
+  .overlay {
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(ellipse at center, rgba(20,28,52,0.92), rgba(7,10,20,0.97));
+    backdrop-filter: blur(10px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    text-align: center;
+    padding: 24px;
+    z-index: 10;
+  }
+  .overlay-card {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 28px;
+    padding: 36px 28px;
+    max-width: 380px;
+    box-shadow: 0 24px 80px rgba(0,0,0,0.6);
+  }
+  .overlay h1 {
+    font-size: 38px;
+    font-weight: 900;
+    margin-bottom: 8px;
+    letter-spacing: -1px;
+    background: linear-gradient(135deg, #6c7cff 0%, #ff7eb3 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .overlay .subtitle { color: #aab2c8; font-size: 14px; margin-bottom: 24px; line-height: 1.5; }
+  .overlay .subtitle b { color: #ff7eb3; }
+  .keyrow { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-top: 1px solid rgba(255,255,255,0.06); font-size: 13px; color: #c4cbdd; }
+  .keyrow:first-of-type { border-top: none; }
+  .keyrow .key { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12); border-radius: 8px; padding: 4px 10px; font-weight: 700; font-size: 12px; color: #fff; min-width: 60px; }
+  .overlay button {
+    margin-top: 26px;
+    padding: 16px 40px;
+    font-size: 17px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    background: linear-gradient(135deg, #6c7cff, #5468ff);
+    color: #fff;
+    border: none;
+    border-radius: 16px;
+    cursor: pointer;
+    box-shadow: 0 12px 28px rgba(84,104,255,0.4);
+    transition: transform 0.1s ease;
+  }
+  .overlay button:active { transform: scale(0.96); }
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="hud">
+    <div class="hud-item"><span class="hud-label">Skor</span><span class="hud-value" id="score">0</span></div>
+    <div class="hud-item"><span class="hud-label">Seviye</span><span class="hud-value" id="level">1</span></div>
+    <div class="hud-item"><span class="hud-label">SOS</span><span class="hud-value sos" id="lines">0</span></div>
+  </div>
+  <canvas id="game"></canvas>
+  <div class="controls">
+    <button class="btn" id="leftBtn">◀</button>
+    <button class="btn" id="downBtn">▼</button>
+    <button class="btn" id="rotateBtn">↻</button>
+    <button class="btn" id="rightBtn">▶</button>
+    <button class="btn accent" id="dropBtn">⏬</button>
+  </div>
+</div>
+
+<div class="overlay" id="startScreen">
+  <div class="overlay-card">
+    <h1>SOS Blocks</h1>
+    <p class="subtitle">S ve O harfleri yukarıdan düşer.<br>Yan yana veya alt alta <b>S·O·S</b> oluşunca patlar!</p>
+    <div class="keyrow"><span>Hareket</span><span class="key">← →</span></div>
+    <div class="keyrow"><span>Döndür</span><span class="key">↑</span></div>
+    <div class="keyrow"><span>Hızlandır</span><span class="key">↓</span></div>
+    <div class="keyrow"><span>Anında bırak</span><span class="key">SPACE</span></div>
+    <button id="startBtn">OYUNA BAŞLA</button>
+  </div>
+</div>
+
+<div class="overlay hidden" id="endScreen">
+  <div class="overlay-card">
+    <h1 id="endTitle">Oyun Bitti</h1>
+    <p class="subtitle">Final Skoru</p>
+    <div class="hud-value" id="finalScore" style="font-size:48px;">0</div>
+    <button id="restartBtn">TEKRAR OYNA</button>
+  </div>
+</div>
+
+<script>
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+
+const COLS = 10;
+const ROWS = 20;
+let CELL, W, H, DPR = 1;
+
+function resize() {
+  const rect = canvas.getBoundingClientRect();
+  DPR = window.devicePixelRatio || 1;
+  canvas.width = rect.width * DPR;
+  canvas.height = rect.height * DPR;
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  W = rect.width;
+  H = rect.height;
+  CELL = Math.floor(Math.min(W / COLS, H / ROWS));
+}
+window.addEventListener('resize', resize);
+
+const SHAPES = [
+  [[1,1,1,1]],
+  [[1,1],[1,1]],
+  [[0,1,0],[1,1,1]],
+  [[1,0,0],[1,1,1]],
+  [[0,0,1],[1,1,1]],
+  [[0,1,1],[1,1,0]],
+  [[1,1,0],[0,1,1]]
+];
+
+let grid = [];
+let current = null;
+let score = 0, level = 1, lines = 0;
+let running = false;
+let dropTimer = 0, dropInterval = 800;
+let particles = [];
+let flashCells = [];
+let flashTimer = 0;
+let animTime = 0;
+
+function initGrid() {
+  grid = [];
+  for (let r = 0; r < ROWS; r++) {
+    grid.push(new Array(COLS).fill(null));
+  }
+}
+
+function randomLetter() {
+  return Math.random() < 0.5 ? 'S' : 'O';
+}
+
+function randomPiece() {
+  const shape = SHAPES[Math.floor(Math.random() * SHAPES.length)];
+  const blocks = shape.map(row => row.map(cell => cell ? randomLetter() : null));
+  return {
+    blocks: blocks,
+    x: Math.floor((COLS - blocks[0].length) / 2),
+    y: 0
+  };
+}
+
+function rotate(piece) {
+  const rows = piece.blocks.length;
+  const cols = piece.blocks[0].length;
+  const rotated = [];
+  for (let c = 0; c < cols; c++) {
+    rotated.push([]);
+    for (let r = rows - 1; r >= 0; r--) {
+      rotated[c].push(piece.blocks[r][c]);
+    }
+  }
+  return { blocks: rotated, x: piece.x, y: piece.y };
+}
+
+function valid(piece, dx=0, dy=0) {
+  for (let r = 0; r < piece.blocks.length; r++) {
+    for (let c = 0; c < piece.blocks[r].length; c++) {
+      if (!piece.blocks[r][c]) continue;
+      const nx = piece.x + c + dx;
+      const ny = piece.y + r + dy;
+      if (nx < 0 || nx >= COLS || ny >= ROWS) return false;
+      if (ny >= 0 && grid[ny][nx]) return false;
+    }
+  }
+  return true;
+}
+
+function lock() {
+  for (let r = 0; r < current.blocks.length; r++) {
+    for (let c = 0; c < current.blocks[r].length; c++) {
+      if (!current.blocks[r][c]) continue;
+      const gy = current.y + r;
+      const gx = current.x + c;
+      if (gy < 0) { endGame(); return; }
+      grid[gy][gx] = current.blocks[r][c];
+    }
+  }
+  checkSOS();
+  spawnPiece();
+}
+
+function checkSOS() {
+  const toClear = new Set();
+  
+  for (let r = 0; r < ROWS; r++) {
+    for (let c = 0; c <= COLS - 3; c++) {
+      if (grid[r][c] === 'S' && grid[r][c+1] === 'O' && grid[r][c+2] === 'S') {
+        toClear.add(`${r},${c}`);
+        toClear.add(`${r},${c+1}`);
+        toClear.add(`${r},${c+2}`);
+      }
+    }
+  }
+  
+  for (let r = 0; r <= ROWS - 3; r++) {
+    for (let c = 0; c < COLS; c++) {
+      if (grid[r][c] === 'S' && grid[r+1][c] === 'O' && grid[r+2][c] === 'S') {
+        toClear.add(`${r},${c}`);
+        toClear.add(`${r+1},${c}`);
+        toClear.add(`${r+2},${c}`);
+      }
+    }
+  }
+  
+  if (toClear.size > 0) {
+    flashCells = Array.from(toClear).map(s => {
+      const [r, c] = s.split(',').map(Number);
+      return {r, c};
+    });
+    flashTimer = 18;
+    
+    for (const key of toClear) {
+      const [r, c] = key.split(',').map(Number);
+      const cx = c * CELL + CELL/2;
+      const cy = r * CELL + CELL/2;
+      const isS = grid[r][c] === 'S';
+      for (let i = 0; i < 14; i++) {
+        const ang = Math.random() * Math.PI * 2;
+        const spd = Math.random() * 7 + 2;
+        particles.push({
+          x: cx, y: cy,
+          vx: Math.cos(ang) * spd,
+          vy: Math.sin(ang) * spd - 2,
+          life: 36, maxLife: 36,
+          size: Math.random() * 4 + 2,
+          color: isS ? (Math.random() < 0.5 ? '#6c7cff' : '#9aa6ff') : (Math.random() < 0.5 ? '#ff7eb3' : '#ffb36c')
+        });
+      }
+    }
+    
+    score += toClear.size * 10 * level;
+    lines += Math.floor(toClear.size / 3);
+    document.getElementById('score').textContent = score;
+    document.getElementById('lines').textContent = lines;
+    
+    level = Math.floor(lines / 10) + 1;
+    dropInterval = Math.max(200, 800 - (level - 1) * 80);
+    document.getElementById('level').textContent = level;
+    
+    setTimeout(() => {
+      for (const key of toClear) {
+        const [r, c] = key.split(',').map(Number);
+        grid[r][c] = null;
+      }
+      applyGravity();
+      setTimeout(() => checkSOS(), 150);
+    }, 220);
+  }
+}
+
+function applyGravity() {
+  for (let c = 0; c < COLS; c++) {
+    let writeRow = ROWS - 1;
+    for (let r = ROWS - 1; r >= 0; r--) {
+      if (grid[r][c]) {
+        if (writeRow !== r) {
+          grid[writeRow][c] = grid[r][c];
+          grid[r][c] = null;
+        }
+        writeRow--;
+      }
+    }
+  }
+}
+
+function spawnPiece() {
+  current = randomPiece();
+  if (!valid(current)) {
+    endGame();
+  }
+}
+
+function move(dx, dy) {
+  if (valid(current, dx, dy)) {
+    current.x += dx;
+    current.y += dy;
+    return true;
+  }
+  return false;
+}
+
+function hardDrop() {
+  while (move(0, 1)) {}
+  lock();
+}
+
+function endGame() {
+  running = false;
+  document.getElementById('endTitle').textContent = 'Oyun Bitti';
+  document.getElementById('finalScore').textContent = score;
+  document.getElementById('endScreen').classList.remove('hidden');
+}
+
+// Renkli yuvarlatılmış blok çizimi
+function roundRect(x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
+}
+
+function drawBlock(cx, cy, letter, ghost=false) {
+  const pad = Math.max(2, CELL * 0.06);
+  const x = cx * CELL + pad;
+  const y = cy * CELL + pad;
+  const size = CELL - pad * 2;
+  const radius = size * 0.22;
+
+  // S = mavi/mor, O = pembe/şeftali
+  const cols = letter === 'S'
+    ? { top: '#7c8cff', bot: '#4d5ee8', glow: 'rgba(108,124,255,0.5)', text: '#eef1ff' }
+    : { top: '#ff9ec4', bot: '#ff5e8a', glow: 'rgba(255,94,138,0.5)', text: '#fff3f7' };
+
+  if (ghost) {
+    ctx.save();
+    ctx.globalAlpha = 0.22;
+    ctx.strokeStyle = cols.top;
+    ctx.lineWidth = 2;
+    roundRect(x, y, size, size, radius);
+    ctx.stroke();
+    ctx.restore();
+    return;
+  }
+
+  ctx.save();
+  // Yumuşak gölge/parıltı
+  ctx.shadowColor = cols.glow;
+  ctx.shadowBlur = CELL * 0.35;
+  ctx.shadowOffsetY = 2;
+
+  // Gradyan gövde
+  const g = ctx.createLinearGradient(x, y, x, y + size);
+  g.addColorStop(0, cols.top);
+  g.addColorStop(1, cols.bot);
+  ctx.fillStyle = g;
+  roundRect(x, y, size, size, radius);
+  ctx.fill();
+  ctx.shadowBlur = 0;
+  ctx.shadowOffsetY = 0;
+
+  // Üst parlaklık (glossy)
+  const hi = ctx.createLinearGradient(x, y, x, y + size * 0.5);
+  hi.addColorStop(0, 'rgba(255,255,255,0.4)');
+  hi.addColorStop(1, 'rgba(255,255,255,0)');
+  ctx.fillStyle = hi;
+  roundRect(x + size*0.1, y + size*0.08, size*0.8, size*0.4, radius*0.7);
+  ctx.fill();
+
+  // Harf
+  ctx.fillStyle = cols.text;
+  ctx.font = `800 ${Math.floor(CELL * 0.5)}px Inter, sans-serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(letter, x + size/2, y + size/2 + 1);
+  ctx.restore();
+}
+
+function draw() {
+  // Oyun alanı arka planı
+  ctx.clearRect(0, 0, W, H);
+  const bg = ctx.createLinearGradient(0, 0, 0, H);
+  bg.addColorStop(0, '#141b32');
+  bg.addColorStop(1, '#0d1220');
+  ctx.fillStyle = bg;
+  roundRect(0, 0, W, H, 20);
+  ctx.fill();
+
+  const boardW = COLS * CELL;
+  const boardH = ROWS * CELL;
+  const offX = (W - boardW) / 2;
+  ctx.save();
+  ctx.translate(offX, 0);
+
+  // İnce grid noktaları
+  ctx.fillStyle = 'rgba(255,255,255,0.035)';
+  for (let r = 0; r < ROWS; r++) {
+    for (let c = 0; c < COLS; c++) {
+      roundRect(c*CELL+CELL*0.4, r*CELL+CELL*0.4, CELL*0.2, CELL*0.2, CELL*0.1);
+      ctx.fill();
+    }
+  }
+
+  for (let r = 0; r < ROWS; r++) {
+    for (let c = 0; c < COLS; c++) {
+      if (!grid[r][c]) continue;
+      drawBlock(c, r, grid[r][c]);
+    }
+  }
+
+  if (flashTimer > 0) {
+    for (const cell of flashCells) {
+      ctx.save();
+      ctx.globalAlpha = flashTimer/18;
+      ctx.fillStyle = '#ffffff';
+      roundRect(cell.c*CELL+2, cell.r*CELL+2, CELL-4, CELL-4, CELL*0.2);
+      ctx.fill();
+      ctx.restore();
+    }
+    flashTimer--;
+  }
+
+  for (const p of particles) {
+    ctx.save();
+    ctx.globalAlpha = p.life / p.maxLife;
+    ctx.fillStyle = p.color;
+    ctx.shadowColor = p.color;
+    ctx.shadowBlur = 8;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.size, 0, Math.PI*2);
+    ctx.fill();
+    ctx.restore();
+  }
+
+  if (current) {
+    let ghostY = current.y;
+    while (true) {
+      let canMove = true;
+      for (let r = 0; r < current.blocks.length; r++) {
+        for (let c = 0; c < current.blocks[r].length; c++) {
+          if (!current.blocks[r][c]) continue;
+          const nx = current.x + c;
+          const ny = ghostY + r + 1;
+          if (nx < 0 || nx >= COLS || ny >= ROWS) { canMove = false; break; }
+          if (ny >= 0 && grid[ny][nx]) { canMove = false; break; }
+        }
+        if (!canMove) break;
+      }
+      if (!canMove) break;
+      ghostY++;
+    }
+
+    for (let r = 0; r < current.blocks.length; r++) {
+      for (let c = 0; c < current.blocks[r].length; c++) {
+        if (!current.blocks[r][c]) continue;
+        drawBlock(current.x + c, ghostY + r, current.blocks[r][c], true);
+      }
+    }
+    for (let r = 0; r < current.blocks.length; r++) {
+      for (let c = 0; c < current.blocks[r].length; c++) {
+        if (!current.blocks[r][c]) continue;
+        drawBlock(current.x + c, current.y + r, current.blocks[r][c]);
+      }
+    }
+  }
+
+  ctx.restore();
+}
+
+function update(dt) {
+  if (!running) return;
+  
+  dropTimer += dt;
+  if (dropTimer >= dropInterval) {
+    dropTimer = 0;
+    if (!move(0, 1)) {
+      lock();
+    }
+  }
+  
+  for (let i = particles.length - 1; i >= 0; i--) {
+    const p = particles[i];
+    p.x += p.vx;
+    p.y += p.vy;
+    p.vy += 0.3;
+    p.vx *= 0.98;
+    p.life--;
+    if (p.life <= 0) particles.splice(i, 1);
+  }
+}
+
+let lastTime = 0;
+function loop(time) {
+  const dt = time - lastTime;
+  lastTime = time;
+  animTime += dt;
+  update(dt);
+  draw();
+  requestAnimationFrame(loop);
+}
+
+function startGame() {
+  score = 0; level = 1; lines = 0;
+  dropInterval = 800;
+  running = true;
+  particles = [];
+  flashCells = [];
+  document.getElementById('score').textContent = 0;
+  document.getElementById('level').textContent = 1;
+  document.getElementById('lines').textContent = 0;
+  document.getElementById('startScreen').classList.add('hidden');
+  document.getElementById('endScreen').classList.add('hidden');
+  resize();
+  initGrid();
+  spawnPiece();
+}
+
+document.addEventListener('keydown', e => {
+  if (!running) return;
+  if (e.key === 'ArrowLeft') { move(-1, 0); e.preventDefault(); }
+  if (e.key === 'ArrowRight') { move(1, 0); e.preventDefault(); }
+  if (e.key === 'ArrowDown') { if (!move(0, 1)) lock(); e.preventDefault(); }
+  if (e.key === 'ArrowUp') { 
+    const rotated = rotate(current);
+    if (valid(rotated)) { current.blocks = rotated.blocks; }
+    else if (valid({...rotated, x: rotated.x - 1})) { current.blocks = rotated.blocks; current.x--; }
+    else if (valid({...rotated, x: rotated.x + 1})) { current.blocks = rotated.blocks; current.x++; }
+    e.preventDefault();
+  }
+  if (e.code === 'Space') { hardDrop(); e.preventDefault(); }
+});
+
+function bindBtn(id, action) {
+  const el = document.getElementById(id);
+  const handler = e => { e.preventDefault(); action(); };
+  el.addEventListener('touchstart', handler, {passive:false});
+  el.addEventListener('mousedown', handler);
+}
+bindBtn('leftBtn', () => { if (running) move(-1, 0); });
+bindBtn('rightBtn', () => { if (running) move(1, 0); });
+bindBtn('downBtn', () => { if (running) { if (!move(0, 1)) lock(); } });
+bindBtn('rotateBtn', () => {
+  if (!running) return;
+  const rotated = rotate(current);
+  if (valid(rotated)) { current.blocks = rotated.blocks; }
+  else if (valid({...rotated, x: rotated.x - 1})) { current.blocks = rotated.blocks; current.x--; }
+  else if (valid({...rotated, x: rotated.x + 1})) { current.blocks = rotated.blocks; current.x++; }
+});
+bindBtn('dropBtn', () => { if (running) hardDrop(); });
+
+document.getElementById('startBtn').addEventListener('click', startGame);
+document.getElementById('restartBtn').addEventListener('click', startGame);
+
+resize();
+initGrid();
+loop(0);
+</script>
+</body>
+</html>
