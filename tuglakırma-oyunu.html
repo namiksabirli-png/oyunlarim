@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Atari - Tuğla Kırma</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    height: 100%;
+    background: #000;
+    font-family: 'Courier New', monospace;
+    color: #0f0;
+    overflow: hidden;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: none;
+  }
+  .wrap {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+  .hud {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 14px;
+    font-size: 16px;
+    background: #111;
+    border-bottom: 2px solid #0f0;
+  }
+  .hud span { font-weight: bold; }
+  #game {
+    flex: 1;
+    width: 100%;
+    background: #000;
+    display: block;
+    border-left: 2px solid #0f0;
+    border-right: 2px solid #0f0;
+  }
+  .controls {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 6px;
+    padding: 10px;
+    background: #111;
+    border-top: 2px solid #0f0;
+  }
+  .btn {
+    background: #1a1a1a;
+    border: 2px solid #0f0;
+    color: #0f0;
+    font-size: 28px;
+    font-weight: bold;
+    padding: 22px 0;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.1s;
+    font-family: inherit;
+  }
+  .btn:active, .btn.active {
+    background: #0f0;
+    color: #000;
+  }
+  .btn.launch { font-size: 18px; padding: 28px 0; }
+  .overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.85);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    text-align: center;
+    padding: 20px;
+    z-index: 10;
+  }
+  .overlay h1 {
+    color: #0f0;
+    font-size: 36px;
+    margin-bottom: 20px;
+    text-shadow: 0 0 10px #0f0;
+  }
+  .overlay p { margin: 8px 0; font-size: 16px; }
+  .overlay button {
+    margin-top: 20px;
+    padding: 14px 28px;
+    font-size: 18px;
+    background: #0f0;
+    color: #000;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-family: inherit;
+    font-weight: bold;
+  }
+  .hidden { display: none !important; }
+  @media (max-width: 480px) {
+    .hud { font-size: 14px; }
+    .btn { font-size: 22px; padding: 18px 0; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="hud">
+    <div>SKOR: <span id="score">0</span></div>
+    <div>CAN: <span id="lives">3</span></div>
+    <div>SEVİYE: <span id="level">1</span></div>
+  </div>
+  <canvas id="game"></canvas>
+  <div class="controls">
+    <button class="btn" id="leftBtn">◀ SOL</button>
+    <button class="btn launch" id="launchBtn">BAŞLAT</button>
+    <button class="btn" id="rightBtn">SAĞ ▶</button>
+  </div>
+</div>
+
+<div class="overlay" id="startScreen">
+  <h1>🕹️ ATARI TUĞLA KIRMA</h1>
+  <p>◀ ▶ tuşları: raket hareketi</p>
+  <p>SPACE: topu fırlat / başlat</p>
+  <p>Tablette: alttaki butonları kullan</p>
+  <p style="margin-top:14px;">Tüm tuğlaları kır!</p>
+  <button id="startBtn">OYUNA BAŞLA</button>
+</div>
+
+<div class="overlay hidden" id="endScreen">
+  <h1 id="endTitle">OYUN BİTTİ</h1>
+  <p>Final Skoru: <span id="finalScore">0</span></p>
+  <button id="restartBtn">TEKRAR OYNA</button>
+</div>
+
+<script>
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+
+let W, H;
+function resize() {
+  const rect = canvas.getBoundingClientRect();
+  canvas.width = rect.width;
+  canvas.height = rect.height;
+  W = canvas.width;
+  H = canvas.height;
+}
+window.addEventListener('resize', resize);
+
+// Oyun durumu
+const state = {
+  score: 0, lives: 3, level: 1,
+  paddle: { x: 0, y: 0, w: 100, h: 12, speed: 7 },
+  ball: { x: 0, y: 0, r: 8, vx: 0, vy: 0, stuck: true },
+  bricks: [],
+  running: false,
+  keys: { left: false, right: false }
+};
+
+const BRICK_ROWS = 6;
+const BRICK_COLS = 8;
+const BRICK_COLORS = ['#ff3860','#ff8c42','#ffd23f','#3fff6b','#3fc1ff','#c83fff'];
+
+function initLevel() {
+  state.paddle.w = Math.min(120, W * 0.22);
+  state.paddle.x = W/2 - state.paddle.w/2;
+  state.paddle.y = H - 30;
+  resetBall();
+  buildBricks();
+}
+
+function resetBall() {
+  state.ball.stuck = true;
+  state.ball.r = Math.max(6, W * 0.018);
+  state.ball.x = state.paddle.x + state.paddle.w/2;
+  state.ball.y = state.paddle.y - state.ball.r - 2;
+  const speed = 4 + state.level * 0.5;
+  state.ball.vx = speed * (Math.random() > 0.5 ? 1 : -1);
+  state.ball.vy = -speed;
+}
+
+function buildBricks() {
+  state.bricks = [];
+  const padding = 6;
+  const offsetTop = 50;
+  const offsetSide = 8;
+  const bw = (W - offsetSide*2 - padding*(BRICK_COLS-1)) / BRICK_COLS;
+  const bh = 22;
+  for (let r = 0; r < BRICK_ROWS; r++) {
+    for (let c = 0; c < BRICK_COLS; c++) {
+      state.bricks.push({
+        x: offsetSide + c*(bw+padding),
+        y: offsetTop + r*(bh+padding),
+        w: bw, h: bh,
+        color: BRICK_COLORS[r % BRICK_COLORS.length],
+        alive: true,
+        points: (BRICK_ROWS - r) * 10
+      });
+    }
+  }
+}
+
+function launchBall() {
+  if (state.ball.stuck && state.running) {
+    state.ball.stuck = false;
+  }
+}
+
+function draw() {
+  // Arka plan
+  ctx.fillStyle = '#000';
+  ctx.fillRect(0, 0, W, H);
+
+  // Tuğlalar
+  for (const b of state.bricks) {
+    if (!b.alive) continue;
+    ctx.fillStyle = b.color;
+    ctx.fillRect(b.x, b.y, b.w, b.h);
+    ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+    ctx.strokeRect(b.x+1, b.y+1, b.w-2, b.h-2);
+  }
+
+  // Raket
+  ctx.fillStyle = '#0f0';
+  ctx.fillRect(state.paddle.x, state.paddle.y, state.paddle.w, state.paddle.h);
+  ctx.shadowColor = '#0f0';
+  ctx.shadowBlur = 10;
+  ctx.fillRect(state.paddle.x, state.paddle.y, state.paddle.w, state.paddle.h);
+  ctx.shadowBlur = 0;
+
+  // Top
+  ctx.fillStyle = '#fff';
+  ctx.beginPath();
+  ctx.arc(state.ball.x, state.ball.y, state.ball.r, 0, Math.PI*2);
+  ctx.fill();
+}
+
+function update() {
+  if (!state.running) return;
+
+  // Raket hareketi
+  if (state.keys.left) state.paddle.x -= state.paddle.speed;
+  if (state.keys.right) state.paddle.x += state.paddle.speed;
+  state.paddle.x = Math.max(0, Math.min(W - state.paddle.w, state.paddle.x));
+
+  // Top yapışıkken raketin üstünde dur
+  if (state.ball.stuck) {
+    state.ball.x = state.paddle.x + state.paddle.w/2;
+    state.ball.y = state.paddle.y - state.ball.r - 2;
+    return;
+  }
+
+  // Top hareketi
+  state.ball.x += state.ball.vx;
+  state.ball.y += state.ball.vy;
+
+  // Duvar çarpışmaları
+  if (state.ball.x - state.ball.r < 0) {
+    state.ball.x = state.ball.r;
+    state.ball.vx *= -1;
+  }
+  if (state.ball.x + state.ball.r > W) {
+    state.ball.x = W - state.ball.r;
+    state.ball.vx *= -1;
+  }
+  if (state.ball.y - state.ball.r < 0) {
+    state.ball.y = state.ball.r;
+    state.ball.vy *= -1;
+  }
+
+  // Raket çarpışması
+  if (state.ball.y + state.ball.r >= state.paddle.y &&
+      state.ball.y + state.ball.r <= state.paddle.y + state.paddle.h &&
+      state.ball.x >= state.paddle.x &&
+      state.ball.x <= state.paddle.x + state.paddle.w &&
+      state.ball.vy > 0) {
+    state.ball.vy *= -1;
+    // Vuruş noktasına göre açı
+    const hit = (state.ball.x - (state.paddle.x + state.paddle.w/2)) / (state.paddle.w/2);
+    const speed = Math.hypot(state.ball.vx, state.ball.vy);
+    const angle = hit * (Math.PI/3); // max 60 derece
+    state.ball.vx = speed * Math.sin(angle);
+    state.ball.vy = -Math.abs(speed * Math.cos(angle));
+  }
+
+  // Tuğla çarpışmaları
+  for (const b of state.bricks) {
+    if (!b.alive) continue;
+    if (state.ball.x + state.ball.r > b.x &&
+        state.ball.x - state.ball.r < b.x + b.w &&
+        state.ball.y + state.ball.r > b.y &&
+        state.ball.y - state.ball.r < b.y + b.h) {
+      b.alive = false;
+      state.score += b.points;
+      document.getElementById('score').textContent = state.score;
+
+      // Hangi taraftan çarptığını tahmin et
+      const prevX = state.ball.x - state.ball.vx;
+      const prevY = state.ball.y - state.ball.vy;
+      const fromLeft = prevX + state.ball.r <= b.x;
+      const fromRight = prevX - state.ball.r >= b.x + b.w;
+      if (fromLeft || fromRight) state.ball.vx *= -1;
+      else state.ball.vy *= -1;
+      break;
+    }
+  }
+
+  // Top düştü mü?
+  if (state.ball.y - state.ball.r > H) {
+    state.lives--;
+    document.getElementById('lives').textContent = state.lives;
+    if (state.lives <= 0) {
+      endGame(false);
+    } else {
+      resetBall();
+    }
+  }
+
+  // Tüm tuğlalar kırıldı mı?
+  if (state.bricks.every(b => !b.alive)) {
+    state.level++;
+    document.getElementById('level').textContent = state.level;
+    if (state.level > 5) {
+      endGame(true);
+    } else {
+      initLevel();
+    }
+  }
+}
+
+function loop() {
+  update();
+  draw();
+  requestAnimationFrame(loop);
+}
+
+function startGame() {
+  state.score = 0;
+  state.lives = 3;
+  state.level = 1;
+  state.running = true;
+  document.getElementById('score').textContent = 0;
+  document.getElementById('lives').textContent = 3;
+  document.getElementById('level').textContent = 1;
+  document.getElementById('startScreen').classList.add('hidden');
+  document.getElementById('endScreen').classList.add('hidden');
+  resize();
+  initLevel();
+}
+
+function endGame(won) {
+  state.running = false;
+  document.getElementById('endTitle').textContent = won ? '🏆 TEBRİKLER!' : '💥 OYUN BİTTİ';
+  document.getElementById('finalScore').textContent = state.score;
+  document.getElementById('endScreen').classList.remove('hidden');
+}
+
+// Klavye kontrolleri
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowLeft') state.keys.left = true;
+  if (e.key === 'ArrowRight') state.keys.right = true;
+  if (e.code === 'Space') { e.preventDefault(); launchBall(); }
+});
+document.addEventListener('keyup', e => {
+  if (e.key === 'ArrowLeft') state.keys.left = false;
+  if (e.key === 'ArrowRight') state.keys.right = false;
+});
+
+// Dokunmatik butonlar
+function bindBtn(id, action) {
+  const el = document.getElementById(id);
+  const start = e => { e.preventDefault(); action(true); el.classList.add('active'); };
+  const end = e => { e.preventDefault(); action(false); el.classList.remove('active'); };
+  el.addEventListener('touchstart', start, {passive:false});
+  el.addEventListener('touchend', end);
+  el.addEventListener('touchcancel', end);
+  el.addEventListener('mousedown', start);
+  el.addEventListener('mouseup', end);
+  el.addEventListener('mouseleave', end);
+}
+bindBtn('leftBtn', v => state.keys.left = v);
+bindBtn('rightBtn', v => state.keys.right = v);
+document.getElementById('launchBtn').addEventListener('click', launchBall);
+document.getElementById('launchBtn').addEventListener('touchstart', e => { e.preventDefault(); launchBall(); }, {passive:false});
+
+document.getElementById('startBtn').addEventListener('click', startGame);
+document.getElementById('restartBtn').addEventListener('click', startGame);
+
+// İlk çizim
+resize();
+initLevel();
+loop();
+</script>
+</body>
+</html>
